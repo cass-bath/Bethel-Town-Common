@@ -1,0 +1,1767 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bethel Town Common</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700;800&family=Alex+Brush&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+  /* ============ CONFIG-DRIVEN THEME TOKENS — matched to townofbethelvt.com ============ */
+  :root{
+    --paper:#FFFFFF;
+    --paper-dim:#F1F1EB;
+    --ink:#202020;
+    --ink-soft:#5B5B54;
+    --pine:#22301B;
+    --pine-deep:#182310;
+    --pine-light:#455E36;
+    --barn:#8C3A2A;
+    --barn-soft:#F3E3DE;
+    --gold:#CBA135;
+    --gold-deep:#8A6A1E;
+    --gold-soft:#F3E9D0;
+    --line:#DDDCD3;
+    --card:#FFFFFE;
+    --radius:3px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Open Sans',sans-serif;
+    font-size:15px;
+    line-height:1.55;
+    min-height:100vh;
+  }
+  h1,h2,h3,.serif{
+    font-family:'Open Sans',sans-serif;
+    font-weight:700;
+    letter-spacing:-0.01em;
+    margin:0;
+    color:var(--pine);
+  }
+  .script{ font-family:'Alex Brush', cursive; font-weight:400; letter-spacing:0.01em; }
+  .mono{font-family:'Open Sans',sans-serif; color:var(--ink-soft);}
+  a{color:var(--pine-light);}
+  button{font-family:inherit;cursor:pointer;}
+  :focus-visible{outline:2px solid var(--gold);outline-offset:2px;}
+  @media (prefers-reduced-motion: reduce){ *{animation:none!important;transition:none!important;} }
+
+  /* ============ HEADER / MASTHEAD — styled after townofbethelvt.com ============ */
+  .masthead{
+    background:linear-gradient(180deg, var(--pine) 0%, var(--pine-deep) 100%);
+    color:var(--paper);
+    border-bottom:4px solid var(--gold);
+    position:relative;
+    overflow:hidden;
+  }
+  .masthead-watermark{
+    position:absolute; right:-10px; top:-6px;
+    font-size:88px; color:#fff; opacity:.07;
+    white-space:nowrap; pointer-events:none;
+  }
+  .utility-bar{
+    max-width:900px;margin:0 auto;padding:10px 20px;
+    display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;
+    border-bottom:1px solid rgba(255,255,255,.18);
+    position:relative;z-index:1;
+  }
+  .utility-bar .tag{
+    font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--gold-soft);opacity:.9;
+  }
+  .search-box{ display:flex;align-items:center;background:#fff;border-radius:2px;overflow:hidden; }
+  .search-box input{
+    border:none;padding:7px 10px;font-family:inherit;font-size:12.5px;width:150px;color:var(--ink);
+  }
+  .search-box input:focus{outline:none;}
+  .search-box button{ background:#fff;border:none;padding:7px 9px;color:var(--pine); }
+
+  .masthead-inner{
+    max-width:900px;margin:0 auto;padding:22px 20px 18px;
+    display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;
+    position:relative;z-index:1;
+  }
+  .masthead h1{font-size:44px;color:var(--paper);font-weight:400;}
+  .masthead .tag{
+    font-size:12px;letter-spacing:.08em;text-transform:uppercase;
+    color:var(--gold-soft);opacity:.85;margin-top:4px;
+  }
+  .viewer-pill{
+    font-size:12px;color:var(--paper);opacity:.9;
+    display:flex;align-items:center;gap:8px;
+  }
+  .viewer-pill button{
+    background:none;border:1px solid rgba(255,255,255,.4);color:var(--paper);
+    padding:4px 9px;border-radius:2px;font-size:11px;
+  }
+  .viewer-pill button:hover{background:rgba(255,255,255,.12);}
+
+  nav.tabs{
+    max-width:900px;margin:0 auto;padding:10px 20px 0;
+    display:flex;gap:6px;flex-wrap:wrap;
+    position:relative;z-index:1;
+  }
+  nav.tabs button{
+    background:none;border:none;color:var(--paper);
+    padding:9px 14px;font-size:13px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;
+    opacity:.85;border-radius:2px;
+  }
+  nav.tabs button.active{opacity:1;background:var(--gold);color:var(--pine-deep);}
+  nav.tabs button:hover{opacity:1;}
+
+  /* ============ SHELL ============ */
+  .shell{max-width:900px;margin:0 auto;padding:24px 20px 80px;}
+
+  .toolbar{
+    display:flex;justify-content:space-between;align-items:center;
+    gap:12px;margin-bottom:18px;flex-wrap:wrap;
+  }
+  .sort-group{display:flex;gap:6px;}
+  .sort-group button{
+    background:var(--card);border:1px solid var(--line);
+    padding:6px 12px;border-radius:2px;font-size:12.5px;color:var(--ink-soft);font-weight:600;
+  }
+  .sort-group button.active{background:var(--pine);color:#fff;border-color:var(--pine);}
+  .new-topic-btn{
+    background:var(--gold);color:var(--pine-deep);border:none;padding:9px 18px;
+    border-radius:var(--radius);font-size:13.5px;font-weight:700;letter-spacing:.02em;text-transform:uppercase;
+  }
+  .new-topic-btn:hover{background:#b8912e;}
+
+  /* ============ TOPIC CARD ============ */
+  .card{
+    background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    padding:16px 18px;margin-bottom:12px;cursor:pointer;
+    transition:border-color .15s, transform .15s;
+  }
+  .card:hover{border-color:var(--pine-light);}
+  .card-top{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;}
+  .badges{display:flex;gap:6px;margin-bottom:7px;flex-wrap:wrap;}
+  .badge{
+    font-size:10.5px;letter-spacing:.03em;text-transform:uppercase;
+    padding:2px 7px;border-radius:2px;font-weight:600;
+  }
+  .badge.category{background:var(--paper-dim);color:var(--ink-soft);}
+  .badge.official{background:var(--gold-soft);color:var(--gold-deep);}
+  .badge.neighbor{background:#DCE7EC;color:#2C4F5E;}
+  .badge.closed{background:var(--paper-dim);color:var(--ink-soft);border:1px solid var(--line);}
+
+  .card h3{font-size:18px;margin-bottom:4px;}
+  .card .snippet{color:var(--ink-soft);font-size:13.5px;margin-bottom:10px;
+    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+  .card-meta{
+    display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;
+  }
+  .byline{font-size:12px;color:var(--ink-soft);}
+  .stats{display:flex;align-items:center;gap:14px;font-size:12.5px;color:var(--ink-soft);}
+  .stats .stat{display:flex;align-items:center;gap:4px;}
+
+  /* pulse meter — signature element */
+  .pulse-wrap{display:flex;align-items:center;gap:6px;min-width:96px;}
+  .pulse-svg{overflow:visible;}
+  .pulse-label{font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft);}
+
+  /* ============ EMPTY STATE ============ */
+  .empty{
+    text-align:center;padding:56px 20px;color:var(--ink-soft);
+    border:1px dashed var(--line);border-radius:var(--radius);
+  }
+  .empty h3{margin-bottom:6px;color:var(--ink);}
+
+  /* ============ THREAD VIEW ============ */
+  .back-link{
+    display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--pine);
+    background:none;border:none;margin-bottom:16px;font-weight:600;
+  }
+  .thread-post{
+    background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    padding:20px;margin-bottom:18px;
+  }
+  .thread-post h2{font-size:23px;margin-bottom:8px;line-height:1.25;}
+  .thread-body{white-space:pre-wrap;font-size:14.5px;margin:14px 0;color:#333;}
+
+  .reaction-row{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;}
+  .reaction-btn{
+    display:flex;align-items:center;gap:6px;
+    background:var(--paper-dim);border:1px solid var(--line);border-radius:20px;
+    padding:6px 12px;font-size:13px;color:var(--ink);
+  }
+  .reaction-btn.active{background:var(--gold-soft);border-color:var(--gold);color:var(--gold-deep);}
+  .reaction-btn:hover{border-color:var(--pine-light);}
+  .report-btn{
+    background:none;border:1px solid var(--line);border-radius:20px;
+    padding:5px 11px;font-size:12px;color:var(--ink-soft);margin-top:6px;
+  }
+  .report-btn:hover{border-color:var(--barn);color:var(--barn);}
+  .report-btn:disabled{opacity:.55;cursor:default;}
+
+  .replies-heading{
+    font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-soft);
+    margin:22px 0 10px;border-top:1px solid var(--line);padding-top:18px;
+  }
+  .reply{
+    padding:12px 0;border-bottom:1px solid var(--line);
+  }
+  .reply:last-child{border-bottom:none;}
+  .reply-meta{font-size:12px;color:var(--ink-soft);margin-bottom:4px;display:flex;gap:8px;align-items:center;}
+  .reply-body{font-size:13.5px;white-space:pre-wrap;}
+
+  .reply-form{margin-top:18px;}
+  .reply-form textarea{
+    width:100%;min-height:70px;border:1px solid var(--line);border-radius:var(--radius);
+    padding:10px;font-family:inherit;font-size:13.5px;resize:vertical;
+  }
+  .reply-form .row{display:flex;gap:8px;margin-top:8px;align-items:center;flex-wrap:wrap;}
+  .reply-form input[type=text]{
+    border:1px solid var(--line);border-radius:var(--radius);padding:8px 10px;font-size:13px;font-family:inherit;
+  }
+  .btn-primary{background:var(--pine);color:#fff;border:none;padding:8px 16px;border-radius:var(--radius);font-size:13px;font-weight:600;}
+  .btn-primary:hover{background:var(--pine-light);}
+  .btn-primary:disabled{opacity:.5;cursor:not-allowed;}
+
+  .law-banner{
+    background:var(--gold-soft);border:1px solid var(--gold);border-radius:var(--radius);
+    padding:12px 14px;font-size:12.5px;color:var(--gold-deep);margin-top:18px;
+  }
+
+  .agreements-panel{
+    background:var(--card);border:1px solid var(--pine-light);border-left:4px solid var(--pine);
+    border-radius:var(--radius);padding:16px 18px;margin-bottom:18px;color:var(--ink);
+  }
+  .agreements-panel a{color:var(--pine);text-decoration:underline;}
+  .agreements-panel.compact{
+    font-size:12.5px;padding:10px 14px;margin-bottom:14px;color:var(--ink-soft);
+    border-left-width:3px;
+  }
+  .info-toggle{
+    background:var(--paper-dim);border:1px solid var(--line);border-radius:20px;
+    padding:7px 14px;font-size:12.5px;color:var(--ink-soft);font-weight:600;
+    display:inline-flex;align-items:center;gap:6px;margin-bottom:14px;
+  }
+  .info-toggle:hover{border-color:var(--pine-light);color:var(--pine);}
+  .info-toggle.compact-variant{margin-bottom:10px;font-weight:400;padding:6px 12px;}
+  .agreements-collapse-btn{
+    background:none;border:none;color:var(--ink-soft);font-size:11px;
+    text-decoration:underline;padding:0;cursor:pointer;
+  }
+
+  /* ============ NEW TOPIC FORM ============ */
+  .form-panel{
+    background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:22px;
+  }
+  .field{margin-bottom:14px;}
+  .field label{display:block;font-size:12px;font-weight:600;color:var(--ink-soft);margin-bottom:5px;text-transform:uppercase;letter-spacing:.04em;}
+  .field input[type=text], .field textarea, .field select{
+    width:100%;border:1px solid var(--line);border-radius:var(--radius);
+    padding:9px 11px;font-family:inherit;font-size:14px;background:#fff;
+  }
+  .field textarea{min-height:120px;resize:vertical;}
+  .radio-row{display:flex;gap:16px;}
+  .radio-row label{display:flex;align-items:center;gap:6px;font-size:13.5px;font-weight:400;text-transform:none;letter-spacing:0;color:var(--ink);}
+
+  /* ============ DIGEST VIEW ============ */
+  .digest-note{
+    background:var(--pine);color:var(--paper);border-radius:var(--radius);
+    padding:14px 16px;font-size:13px;margin-bottom:18px;line-height:1.5;
+  }
+  .digest-row{
+    background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    padding:14px 16px;margin-bottom:10px;cursor:pointer;
+  }
+  .digest-row:hover{border-color:var(--pine-light);}
+  .digest-title{font-weight:600;font-size:15px;margin-bottom:6px;}
+  .digest-bars{display:flex;gap:2px;height:8px;border-radius:4px;overflow:hidden;margin-bottom:6px;}
+  .digest-bars div{height:100%;}
+  .digest-legend{display:flex;gap:14px;font-size:11px;color:var(--ink-soft);}
+  .digest-legend span{display:flex;align-items:center;gap:4px;}
+  .dot{width:8px;height:8px;border-radius:50%;display:inline-block;}
+
+  @media (max-width: 520px){
+    .masthead h1{font-size:24px;}
+    .card-meta{flex-direction:column;align-items:flex-start;}
+    .toolbar{flex-direction:column;align-items:stretch;gap:10px;}
+    .toolbar > div{width:100%;}
+    .sort-group{flex-wrap:wrap;row-gap:8px;}
+    .sort-group button{flex:1 1 auto;}
+    .sort-group select{width:100%;flex:1 1 100%;}
+    .sort-group label{width:100%;}
+  }
+
+  /* ============ PRINT ============ */
+  .print-btn{
+    background:var(--card);border:1px solid var(--line);border-radius:2px;
+    padding:6px 12px;font-size:12.5px;color:var(--ink-soft);font-weight:600;
+  }
+  .print-btn:hover{border-color:var(--pine-light);color:var(--pine);}
+
+  @media print{
+    .masthead, nav.tabs, .toolbar, .back-link, .print-btn, .report-btn,
+    .reply-form, .agreements-panel, .form-panel .field:has(#newPassphrase),
+    .radio-row, .empty, .poll-vote-form, .vote-btn{ display:none !important; }
+    body{ background:#fff; color:#000; font-size:12px; }
+    .shell{ max-width:100%; padding:0; }
+    .card, .thread-post, .digest-row{ border:1px solid #999; box-shadow:none; break-inside:avoid; margin-bottom:10px; }
+    .reaction-btn{ border:none; background:none; padding:2px 10px 2px 0; color:#000; }
+    a{ color:#000; text-decoration:underline; }
+    .badge{ border:1px solid #999; }
+    .poll-pie-chart, .digest-bars, .digest-bars div, .dot, .badge{
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+      color-adjust: exact !important;
+    }
+  }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="masthead-watermark script" id="watermarkText">Bethel Town Common</div>
+  <div class="utility-bar">
+    <div class="tag">Bethel, Vermont</div>
+    <div class="search-box">
+      <input type="text" id="searchInput" placeholder="Search discussions...">
+      <button id="searchBtn" aria-label="Search">🔎</button>
+    </div>
+  </div>
+  <div class="masthead-inner">
+    <div>
+      <h1 id="townTitle" class="script" style="cursor:pointer;" title="About Bethel Town Common">Bethel Town Common</h1>
+      <div class="tag">Public discussion and community input forum</div>
+      <button id="aboutLink" style="background:none;border:none;color:var(--gold-soft);font-size:11px;text-decoration:underline;padding:0;margin-top:4px;cursor:pointer;">About this page</button>
+    </div>
+    <div class="viewer-pill">
+      <span id="viewerLabel">Viewing as Resident</span>
+      <button id="changeRoleBtn">change</button>
+    </div>
+  </div>
+  <nav class="tabs" id="navTabs">
+    <button data-tab="home" class="active">Discussions</button>
+    <button data-tab="digest">Discussion Summary</button>
+    <button data-tab="moderate" id="moderateTabBtn">Moderate</button>
+  </nav>
+</header>
+
+<main class="shell" id="app"></main>
+
+<script>
+/* =====================================================================
+   CONFIG — edit these to fit your town before publishing
+===================================================================== */
+const CONFIG = {
+  townName: "Bethel Town Common",              // shown in the masthead
+  categories: ["Budget & Taxes","Roads & Plowing","Recreation","Land Use","Public Safety","Events","Board Process & Transparency","General"],
+  officialPassphrase: "select2026",      // simple friction so not anyone can post as "Town Management" — NOT real security
+  moderatorPassphrase: "moderate2026",   // separate passphrase to open the Moderate tab — change this before publishing
+  flagThreshold: 3,                      // number of reports before a post/reply auto-hides pending review
+  autoCloseMonths: 12,                   // discussions auto-close after this many months of no new replies
+  maxPollOptions: 6,                     // max options a poll can have
+  neighboringTowns: ["Royalton","Stockbridge","Rochester","Randolph","Pittsfield","Barnard"], // nearby towns
+  profanityWords: ["fuck","shit","bitch","asshole","bastard","dumbass","cunt","douchebag","slut","whore"], // soft warning list — edit freely, this is not exhaustive
+  rulesUrl: "https://townofbethelvt.com/vertical/sites/%7B46C5C479-45BC-4485-9BD0-06530D0ACFB2%7D/uploads/Bethel_Selectboard_Rules_of_Procedure.docx",
+  sectionFPdf: "data:application/pdf;base64,JVBERi0xLjQKJZOMi54gUmVwb3J0TGFiIEdlbmVyYXRlZCBQREYgZG9jdW1lbnQgKG9wZW5zb3VyY2UpCjEgMCBvYmoKPDwKL0YxIDIgMCBSIC9GMiAzIDAgUiAvRjMgNCAwIFIKPj4KZW5kb2JqCjIgMCBvYmoKPDwKL0Jhc2VGb250IC9IZWx2ZXRpY2EgL0VuY29kaW5nIC9XaW5BbnNpRW5jb2RpbmcgL05hbWUgL0YxIC9TdWJ0eXBlIC9UeXBlMSAvVHlwZSAvRm9udAo+PgplbmRvYmoKMyAwIG9iago8PAovQmFzZUZvbnQgL0hlbHZldGljYS1Cb2xkIC9FbmNvZGluZyAvV2luQW5zaUVuY29kaW5nIC9OYW1lIC9GMiAvU3VidHlwZSAvVHlwZTEgL1R5cGUgL0ZvbnQKPj4KZW5kb2JqCjQgMCBvYmoKPDwKL0Jhc2VGb250IC9IZWx2ZXRpY2EtT2JsaXF1ZSAvRW5jb2RpbmcgL1dpbkFuc2lFbmNvZGluZyAvTmFtZSAvRjMgL1N1YnR5cGUgL1R5cGUxIC9UeXBlIC9Gb250Cj4+CmVuZG9iago1IDAgb2JqCjw8Ci9Db250ZW50cyA5IDAgUiAvTWVkaWFCb3ggWyAwIDAgNjEyIDc5MiBdIC9QYXJlbnQgOCAwIFIgL1Jlc291cmNlcyA8PAovRm9udCAxIDAgUiAvUHJvY1NldCBbIC9QREYgL1RleHQgL0ltYWdlQiAvSW1hZ2VDIC9JbWFnZUkgXQo+PiAvUm90YXRlIDAgL1RyYW5zIDw8Cgo+PiAKICAvVHlwZSAvUGFnZQo+PgplbmRvYmoKNiAwIG9iago8PAovUGFnZU1vZGUgL1VzZU5vbmUgL1BhZ2VzIDggMCBSIC9UeXBlIC9DYXRhbG9nCj4+CmVuZG9iago3IDAgb2JqCjw8Ci9BdXRob3IgKFwoYW5vbnltb3VzXCkpIC9DcmVhdGlvbkRhdGUgKEQ6MjAyNjA3MjgxODM1NDArMDAnMDAnKSAvQ3JlYXRvciAoXCh1bnNwZWNpZmllZFwpKSAvS2V5d29yZHMgKCkgL01vZERhdGUgKEQ6MjAyNjA3MjgxODM1NDArMDAnMDAnKSAvUHJvZHVjZXIgKFJlcG9ydExhYiBQREYgTGlicmFyeSAtIFwob3BlbnNvdXJjZVwpKSAKICAvU3ViamVjdCAoXCh1bnNwZWNpZmllZFwpKSAvVGl0bGUgKFwoYW5vbnltb3VzXCkpIC9UcmFwcGVkIC9GYWxzZQo+PgplbmRvYmoKOCAwIG9iago8PAovQ291bnQgMSAvS2lkcyBbIDUgMCBSIF0gL1R5cGUgL1BhZ2VzCj4+CmVuZG9iago5IDAgb2JqCjw8Ci9GaWx0ZXIgWyAvQVNDSUk4NURlY29kZSAvRmxhdGVEZWNvZGUgXSAvTGVuZ3RoIDE4ODAKPj4Kc3RyZWFtCkdhdTBDPyRHOWQmOk1tLlFxK1Q/O0pbSjtoNT4pX2ooLUpiVWcpUU5dRWhfbCZtOTZkKWpbKXBwdGgtRSInSDg3P15uQT1BOiQuU2tLWSlCNnBwbEByXE1aUD9JLmw2RzdkN3VjJ0stKCNAajNQVXBvcyVocDglZGpFKkFLaUZAaG0sZkJLKllJaT0mP0ImLShHVj1dR1IlZVoxJ0cma2xuJE9edTtVWzlzYkc4QkZpRFRNVUJqJE8nZFooU2k5SWhKdGQvOHBkNU9iZz9qNnNoMGtIZTx0bz9pPD9AKT8tUml1YlByTG5aJnIvODZlcTA/Lio4TjtQbkZMWEYoZCJIVFBWcDAvX0g/SUVbMTpaNTtPLlZuOCg5PWgpPD1zXDg4PmNBQCQkYm9IblovMixHTCQxOyJHcHVcZyxbQFhQLi1gJiJHaGg5VixdOjc6Nyk+TC8yTignPT5fYHU/cVtVXz4qTE9sJlkhXChZKm1KbTJdKHUkbGE2UDdlXGJuTSdeOk0laFM2cGRBZ3U2KCczZjJhLSl1dU1ZITYtVUA5bks+XCVENk9ST0RxTkI6Xk5JXVhYVEk+PCtiNlVNS0k9YVZFNURjbVZhTjZEcl91JDRySVFfY2RrX2txQldEJEZOKmMqJ2wwTGMnNCxUIzhNJDRaVjkiNE9VOUkqPFptOy4oZXMyTHRqYzJyK25sdE5tIURCc1lhQzdHRUBCNVBIOzNualxKZ0hbUyM5L1MsbFlgPSVnWzppPT1jbjQ8bSxVXFBHWlU6R3M3KSs/JmhHN1VoP24wO09yUC1dbjhvOWlqN0BiaktYYSlNQUs/UzMuOl8haFRJOXQnSDw+QTcpMT9ySlxhZSYrKCNDdU1WQ0dILS9cOEZsNUE8Ryo+JUE4OEFeWmZxVkklLi5dZVFXRWA/YlMpN2Y6WmZtU2RbUlZaaWAraW0nVTFmI0YkKHFmQ3Q3XSxCS1hmU0Q5aFZkJyFGJik6cC8oQyNeZm4jRSwlNiota1IiaTY+Jm5Gb1A/RUhGcT9vV0JdS19wZDpyMCdbOU8zOThmLFIsSCRZYWpjOzI7Zy9zQyNbQGRoIVdNR3ErRkhtcCokSkJMUlBNaXRTR0AnLig8Wi9PaUhKUlkjZT5lNWFJYCs2Q1RASXE2YyguKkxQPUNeaEdlPms9cFozLTRrXlE9Nl1GOWhmbSVbREF0RDxYRUA0QVZlWS5bQVxNbl00QVwtUzNGY0ZJL0sjdXFzMCNdc2RoXEYkJ0Y5a1VwVDhJKCopOGwtMV91a05XKixFaWEjL3BVZU9rWTNvKjhPKy01PDVialBNVyJPVFZsOF4nOE1zRzleS3AjNT9PKExPSl1JJC5UN2ZrUUFgRCtqYy0oNEVaUVRxPylgZj9Ubz4iIlpSUDc9IT8rWlNhbWguZTNxITQ4TWpJV3BCOFlWUFEwaS8lL2RnaSRGYHIkWjdyVSRIWFJvZyFsRz0mRTJrXEpwMGBWR0llRGRmOUkpR1g6aGA9JytJYjZjSj41MDosI0VbNTJIK2QvJUIsP3VlPyo/LWdOWzZGdEJtLCwqJSZfISZdKCJldGdjTXMhKy9wYTRhdDd1cSMoZ1tDOGchUXJAPSwqQWdTPkAtNUhhXnEvb0pVSEdIRFdlUj91MzIrOzEuUTBGSFZgUS9PZnAiLjFYXGkqbi1wbWhUMS5jN1hmWmM9T2xLR0k+JDAsTmsnTE9DXDMzUS9FNXNObTgvQ08vdGRkMnRaZzM8XSM2MFppamY0LkdzKiJSZmYrZyVpOSJjQyRtam1LYStlZj4tNzJDajJuQU5JKltELFAsNjNKOCpVMS9NTEFFMHBgbW9rIk9CTTZHVWdLYnA6X3FkP0BXUzhncT0+cicpWSUyUTJZVS08aD4jaHBdOmZLS0wzYD8xW0cvMDsnVydxVzs6Mm49alJkISlvQkhtMyUpTWJvXT1PLk5pL2VlaXJjLT06PzsuL1FVZEIwNk0qWmloZGdDMUM3WzA7QGgjOmJtZWJtQ1wmYFYlX2subFIxUGssOitPXCptR2sucE9wTVUrP0Y5X182LUNSUzJFIXUwdT5mX3RlTFZtJVo7MEBVKnM2b2JWXHJXcldTWlNEQjhuJFBlS0tsV2ksbStsKyR1Qz1ibUwmNTZlYlNaYzh0WGVRXVhGSXBLcmhLb0E5UiI2ZFBGa2tLKC5Yak1WQXNFO0pgcXJkdCghSzhOVGE0M3A3VnBKNU9xRVA5W1suX2tgb2xIWk4zc2BEVj5OV0xldUUkZ2dXSCw3KVQ6W0omOSlmKz1HY1VIOHNMQDQyV0tYcUxuJVhTSV9LWVVObyZVQFlBUTtVJCVRXCVTaU1LMExIMmdGMThSPTAvcDhrYCpDMlBocjslJWM+WnQwRiMxblBnMVBvXFFBRChMYSVCRE89bi5uTCYmRjFvR2FTbGIxZF9caHRrOFwuLiZla1RqMVZwTjxcbjRERTUxMV9rR1RdNEE1Z0lyPDV0OGsiUH4+ZW5kc3RyZWFtCmVuZG9iagp4cmVmCjAgMTAKMDAwMDAwMDAwMCA2NTUzNSBmIAowMDAwMDAwMDYxIDAwMDAwIG4gCjAwMDAwMDAxMTIgMDAwMDAgbiAKMDAwMDAwMDIxOSAwMDAwMCBuIAowMDAwMDAwMzMxIDAwMDAwIG4gCjAwMDAwMDA0NDYgMDAwMDAgbiAKMDAwMDAwMDYzOSAwMDAwMCBuIAowMDAwMDAwNzA3IDAwMDAwIG4gCjAwMDAwMDA5ODcgMDAwMDAgbiAKMDAwMDAwMTA0NiAwMDAwMCBuIAp0cmFpbGVyCjw8Ci9JRCAKWzxiMjI0ZjY3NGZhOTRiOTM3OTQ1Nzg5NGUzYzVhMWFlYT48YjIyNGY2NzRmYTk0YjkzNzk0NTc4OTRlM2M1YTFhZWE+XQolIFJlcG9ydExhYiBnZW5lcmF0ZWQgUERGIGRvY3VtZW50IC0tIGRpZ2VzdCAob3BlbnNvdXJjZSkKCi9JbmZvIDcgMCBSCi9Sb290IDYgMCBSCi9TaXplIDEwCj4+CnN0YXJ0eHJlZgozMDE3CiUlRU9GCg==",
+  supabaseUrl: "https://uojopzfdrvqcjlwsunal.supabase.co",
+  supabaseKey: "sb_publishable_nczpjuB9tIyQFo2AyOdhbA_wR5xW9SW"
+};
+document.getElementById('townTitle').textContent = CONFIG.townName;
+document.getElementById('watermarkText').textContent = CONFIG.townName;
+
+const SB_HEADERS = {
+  'apikey': CONFIG.supabaseKey,
+  'Authorization': `Bearer ${CONFIG.supabaseKey}`,
+  'Content-Type': 'application/json'
+};
+function sbUrl(path){ return `${CONFIG.supabaseUrl}/rest/v1/${path}`; }
+
+function containsProfanity(text){
+  const lower = text.toLowerCase();
+  return CONFIG.profanityWords.some(w => new RegExp(`\\b${w}\\b`,'i').test(lower));
+}
+function isValidEmail(v){ return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); }
+function openSectionFPdf(){
+  try{
+    const base64 = CONFIG.sectionFPdf.split(',')[1];
+    const byteChars = atob(base64);
+    const byteNumbers = new Array(byteChars.length);
+    for(let i=0;i<byteChars.length;i++) byteNumbers[i] = byteChars.charCodeAt(i);
+    const byteArray = new Uint8Array(byteNumbers);
+    const blob = new Blob([byteArray], {type:'application/pdf'});
+    const url = URL.createObjectURL(blob);
+    window.open(url, '_blank');
+  }catch(e){ console.error('could not open Section F PDF', e); alert('Could not open the document — try again.'); }
+}
+function downloadPostCopy({ title, category, authorName, authorType, createdAt, body, kind, parentTitle }){
+  try{
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ unit:'pt', format:'letter' });
+    const marginX = 54; let y = 60;
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const maxWidth = doc.internal.pageSize.getWidth() - marginX*2;
+
+    function ensureRoom(lines){ if(y + lines*14 > pageHeight - 50){ doc.addPage(); y = 60; } }
+
+    doc.setFont('helvetica','bold'); doc.setFontSize(15);
+    const titleLines = doc.splitTextToSize(kind==='reply' ? `Reply on: ${parentTitle}` : title, maxWidth);
+    ensureRoom(titleLines.length); doc.text(titleLines, marginX, y); y += titleLines.length*18 + 4;
+
+    doc.setFont('helvetica','italic'); doc.setFontSize(10);
+    const meta = `${category} · ${authorName}${authorType==='staff' ? ' (Town Management)' : ''} · ${new Date(createdAt).toLocaleString()}`;
+    doc.text(meta, marginX, y); y += 22;
+
+    if(kind==='reply'){
+      doc.setFont('helvetica','bold'); doc.setFontSize(11);
+      doc.text('Your reply:', marginX, y); y += 16;
+    }
+
+    doc.setFont('helvetica','normal'); doc.setFontSize(11);
+    const bodyLines = doc.splitTextToSize(body, maxWidth);
+    bodyLines.forEach(line=>{ ensureRoom(1); doc.text(line, marginX, y); y += 15; });
+
+    y += 20; ensureRoom(3);
+    doc.setFont('helvetica','italic'); doc.setFontSize(9); doc.setTextColor(90,90,84);
+    const footer = doc.splitTextToSize('This is a personal copy for your own records, downloaded at the time of posting. It is not an official town document.', maxWidth);
+    doc.text(footer, marginX, y);
+
+    const slug = (kind==='reply' ? parentTitle : title).toLowerCase().replace(/[^a-z0-9]+/g,'-').slice(0,40).replace(/(^-|-$)/g,'');
+    doc.save(`${kind}-copy-${slug || 'post'}.pdf`);
+  }catch(e){ console.error('could not generate PDF copy', e); alert('Your post was saved, but the PDF copy could not be generated.'); }
+}
+function ownerCheck(realEmail){
+  const entered = prompt('Enter the email you used when posting this:');
+  if(entered===null) return false;
+  return realEmail && entered.trim().toLowerCase() === realEmail.trim().toLowerCase();
+}
+
+/* =====================================================================
+   STATE
+===================================================================== */
+let topics = [];
+let currentTab = 'home';
+let currentSort = 'rising';
+let currentSearch = '';
+let currentCategoryFilter = '';
+let digestCategoryFilter = '';
+let currentTopicId = null;
+let viewerRole = localStorage.getItem('tc-role') || null; // 'resident' | 'staff' | 'board'
+let reactedMap = JSON.parse(localStorage.getItem('tc-reacted') || '{}');
+let flaggedMap = JSON.parse(localStorage.getItem('tc-flagged') || '{}');
+let isModerator = false; // session-only, requires passphrase each visit
+let editingTopic = null; // topic id currently being edited
+let editingReply = null; // {topicId, index} currently being edited
+let postKind = 'discussion'; // 'discussion' | 'poll' — for the new-topic form
+let newPollOptions = ['', '']; // draft option text while creating a poll
+let votedPolls = JSON.parse(localStorage.getItem('tc-voted-polls') || '{}'); // pollId -> option index (this browser only, convenience — DB unique constraint is the real guard)
+/* Private, per-device notes for a board member's own use — never sent to the server, never shared with other members or town staff. */
+let myMeetingFlags = JSON.parse(localStorage.getItem('tc-meeting-flags') || '{}'); // topicId -> {flagged:bool, note:string}
+function saveMeetingFlags(){ localStorage.setItem('tc-meeting-flags', JSON.stringify(myMeetingFlags)); }
+function isFlaggedForMeeting(topicId){ return !!(myMeetingFlags[topicId] && myMeetingFlags[topicId].flagged); }
+let showOnlyFlagged = false;
+let agreementItemsOpen = {}; // itemId -> bool, for the individual expandable agreement items
+const AGREEMENT_ITEMS = [
+  { id:'public', label:'A public forum, not run by the public', detail:"Like Select Board meetings, this forum is held <em>in</em> the public, not <em>of</em> the public — anyone can observe and take part, but it isn't run or owned by the assembled public. Order and mutual respect are still expected of everyone." },
+  { id:'topic', label:'Stay on topic', detail:'Comments should be addressed to the topic or to the community as a whole, not aimed at any individual person.' },
+  { id:'violation', label:'What counts as a violation', detail:"A violation of these agreements includes personal, impertinent, threatening, or profane remarks, or content aimed at an individual rather than the topic at hand. Harassment or threats aren't tolerated." },
+  { id:'reporting', label:'Reporting', detail:'Anyone reading this forum — not just those posting — can report a violation they see. It takes 3 separate reports, not just one person, before a post is pulled from public view and escalated for a moderator to review.' },
+  { id:'consequences', label:'Consequences', detail:'If your content is removed for a violation, that alone will not necessarily stop you from posting again — but a second removal will block your email from posting further. The moderator reserves the right to block an email immediately after a single violation if it is deemed severe.' },
+  { id:'privacy', label:'Privacy', detail:'Posting here is anonymous by design — choose any display name you like so you can give honest opinions. A private email is required to post, but it is never shown publicly or to town management by default. It is only seen by a moderator if a post is flagged and escalated for review.' }
+];
+let compactReminderOpen = false;
+function saveVotedPolls(){ localStorage.setItem('tc-voted-polls', JSON.stringify(votedPolls)); }
+let blockedEmails = new Set();
+let violations = {}; // email -> count of moderator-deleted flagged content
+
+const ROLE_LABELS = { resident:'Resident', staff:'Town Staff', board:'Select Board Member' };
+
+function saveReacted(){ localStorage.setItem('tc-reacted', JSON.stringify(reactedMap)); }
+function saveFlagged(){ localStorage.setItem('tc-flagged', JSON.stringify(flaggedMap)); }
+
+/* =====================================================================
+   STORAGE — Supabase table `topics` (shared across all visitors of this page)
+===================================================================== */
+let storageError = false;
+
+async function loadTopics(){
+  try{
+    const res = await fetch(sbUrl('topics?select=*&order=created_at.desc'), { headers: SB_HEADERS });
+    if(!res.ok) throw new Error('GET failed: '+res.status);
+    topics = await res.json();
+    storageError = false;
+  }catch(e){
+    console.error('load error', e);
+    topics = [];
+    storageError = true;
+    return;
+  }
+  if(topics.length === 0){
+    await seedIfEmpty();
+  }
+}
+
+async function seedIfEmpty(){
+  try{
+    const res = await fetch(sbUrl('topics'), {
+      method:'POST',
+      headers:{...SB_HEADERS, 'Prefer':'return=representation'},
+      body: JSON.stringify(seedTopics())
+    });
+    if(res.ok) topics = await res.json();
+  }catch(e){ console.error('seed error', e); }
+}
+
+async function createTopic(newTopic){
+  const res = await fetch(sbUrl('topics'), {
+    method:'POST',
+    headers:{...SB_HEADERS, 'Prefer':'return=representation'},
+    body: JSON.stringify([newTopic])
+  });
+  if(!res.ok){
+    let detail = '';
+    try{ const j = await res.json(); detail = j.message || j.hint || JSON.stringify(j); }catch(e){}
+    throw new Error(`insert failed: ${res.status} — ${detail}`);
+  }
+  const rows = await res.json();
+  topics.unshift(rows[0]);
+}
+
+async function updateTopic(id, patch){
+  const res = await fetch(sbUrl(`topics?id=eq.${id}`), {
+    method:'PATCH',
+    headers:{...SB_HEADERS, 'Prefer':'return=representation'},
+    body: JSON.stringify(patch)
+  });
+  if(!res.ok) throw new Error('update failed: '+res.status);
+  const rows = await res.json();
+  const idx = topics.findIndex(t=>t.id===id);
+  if(idx>-1 && rows[0]) topics[idx] = rows[0];
+}
+
+async function deleteTopic(id){
+  const res = await fetch(sbUrl(`topics?id=eq.${id}`), { method:'DELETE', headers: SB_HEADERS });
+  if(!res.ok) throw new Error('delete failed: '+res.status);
+  topics = topics.filter(t=>t.id!==id);
+}
+
+/* ---- poll voting ---- */
+async function castVote(pollTopic, email, optionIndex){
+  const clean = email.trim().toLowerCase();
+  const res = await fetch(sbUrl('poll_votes'), {
+    method:'POST',
+    headers: SB_HEADERS,
+    body: JSON.stringify([{ id: uid(), poll_id: pollTopic.id, email: clean, option_index: optionIndex }])
+  });
+  if(!res.ok){
+    if(res.status === 409) throw new Error('DUPLICATE');
+    throw new Error('vote failed: '+res.status);
+  }
+  pollTopic.poll.counts[optionIndex] = (pollTopic.poll.counts[optionIndex]||0) + 1;
+  await updateTopic(pollTopic.id, { poll: pollTopic.poll });
+  votedPolls[pollTopic.id] = optionIndex;
+  saveVotedPolls();
+}
+function pollTotalVotes(t){
+  if(!t.poll) return 0;
+  return t.poll.counts.reduce((a,b)=>a+(b||0), 0);
+}
+const POLL_COLORS = ['#3B6156','#CBA135','#8C3A2A','#8A6A1E','#182310','#5B5B54'];
+function pollPieChart(t){
+  const total = pollTotalVotes(t);
+  if(!total) return `background:var(--paper-dim);`;
+  let cursor = 0;
+  const stops = t.poll.options.map((opt,i)=>{
+    const count = t.poll.counts[i]||0;
+    const pct = count/total*100;
+    const start = cursor;
+    cursor += pct;
+    return `${POLL_COLORS[i%POLL_COLORS.length]} ${start.toFixed(2)}% ${cursor.toFixed(2)}%`;
+  }).join(', ');
+  return `background:conic-gradient(${stops});`;
+}
+
+/* ---- blocked emails ---- */
+async function loadBlockedEmails(){
+  try{
+    const res = await fetch(sbUrl('blocked_emails?select=email'), { headers: SB_HEADERS });
+    if(!res.ok) throw new Error('GET blocked_emails failed: '+res.status);
+    const rows = await res.json();
+    blockedEmails = new Set(rows.map(r=>r.email));
+  }catch(e){ console.error('blocked_emails load error', e); }
+}
+function isBlocked(email){ return blockedEmails.has((email||'').trim().toLowerCase()); }
+async function blockEmail(email, reason){
+  const clean = email.trim().toLowerCase();
+  const res = await fetch(sbUrl('blocked_emails?on_conflict=email'), {
+    method:'POST',
+    headers:{...SB_HEADERS, 'Prefer':'return=representation,resolution=merge-duplicates'},
+    body: JSON.stringify([{ email: clean, reason: reason||null }])
+  });
+  if(!res.ok) throw new Error('block failed: '+res.status);
+  blockedEmails.add(clean);
+}
+async function unblockEmail(email){
+  const clean = email.trim().toLowerCase();
+  const res = await fetch(sbUrl(`blocked_emails?email=eq.${encodeURIComponent(clean)}`), { method:'DELETE', headers: SB_HEADERS });
+  if(!res.ok) throw new Error('unblock failed: '+res.status);
+  blockedEmails.delete(clean);
+}
+
+/* ---- violations: first flagged-and-removed post is a pass; the 2nd auto-blocks ---- */
+async function loadViolations(){
+  try{
+    const res = await fetch(sbUrl('email_violations?select=email,count'), { headers: SB_HEADERS });
+    if(!res.ok) throw new Error('GET email_violations failed: '+res.status);
+    const rows = await res.json();
+    violations = {};
+    rows.forEach(r=>{ violations[r.email] = r.count; });
+  }catch(e){ console.error('email_violations load error', e); }
+}
+function violationCount(email){ return violations[(email||'').trim().toLowerCase()] || 0; }
+async function recordViolation(email){
+  if(!email) return 0;
+  const clean = email.trim().toLowerCase();
+  const newCount = (violations[clean]||0) + 1;
+  try{
+    await fetch(sbUrl('email_violations?on_conflict=email'), {
+      method:'POST',
+      headers:{...SB_HEADERS, 'Prefer':'resolution=merge-duplicates'},
+      body: JSON.stringify([{ email: clean, count: newCount, last_violation: new Date().toISOString() }])
+    });
+  }catch(e){ console.error('record violation failed', e); }
+  violations[clean] = newCount;
+  if(newCount >= 2){
+    try{ await blockEmail(clean, 'automatic: 2nd violation'); }catch(e){ console.error(e); }
+  }
+  return newCount;
+}
+
+function seedTopics(){
+  return [
+    {
+      id:'t1', title:'What should we prioritize for next year\'s road budget?',
+      body:'The select board is looking at three options for next year\'s paving budget: resurfacing Main Street, shoring up the covered bridge approach, or spreading smaller repairs across more back roads. Would like to hear what matters most to people who drive these roads daily.',
+      category:'Roads & Plowing', author_type:'staff', author_name:'Town Manager\'s Office',
+      contact_email:'townoffice@example.gov', flags:0, hidden:false,
+      reactions:{support:0,concern:0,idea:0}, replies:[]
+    },
+    {
+      id:'t2', title:'Recreation Center schedule — what are we missing?',
+      body:'Starting a thread to collect thoughts on recreation center hours and programming for the coming season. What times or programs would actually get you and your family there?',
+      category:'Recreation', author_type:'resident', author_name:'A neighbor',
+      contact_email:'neighbor@example.com', flags:0, hidden:false,
+      reactions:{support:0,concern:0,idea:0}, replies:[]
+    }
+  ];
+}
+
+/* =====================================================================
+   MOMENTUM / PULSE
+===================================================================== */
+function momentum(t){
+  const r = t.reactions;
+  const pollVotes = t.poll ? pollTotalVotes(t) : 0;
+  return (r.support||0) + (r.concern||0) + (r.idea||0) + t.replies.length*2 + pollVotes;
+}
+function isClosed(t){
+  const now = Date.now();
+  if(t.closes_at && new Date(t.closes_at).getTime() <= now) return true;
+  const lastReply = t.replies.length ? t.replies[t.replies.length-1] : null;
+  const lastActivityMs = lastReply
+    ? (typeof lastReply.createdAt === 'number' ? lastReply.createdAt : new Date(lastReply.createdAt).getTime())
+    : new Date(t.created_at).getTime();
+  const windowMs = CONFIG.autoCloseMonths * 30.44 * 24*60*60*1000;
+  return (now - lastActivityMs) > windowMs;
+}
+function closedReason(t){
+  const now = Date.now();
+  if(t.closes_at && new Date(t.closes_at).getTime() <= now) return 'date';
+  return 'inactive';
+}
+function pulseSVG(score){
+  // scale 0..~30 to a bar width, spike height reacts to score
+  const maxScore = 30;
+  const pct = Math.min(score/maxScore, 1);
+  const w = 70, h = 20;
+  const spikeH = 4 + pct*13;
+  const midY = h/2;
+  const path = `M0,${midY} L${w*0.35},${midY} L${w*0.42},${midY-spikeH} L${w*0.5},${midY+spikeH*0.7} L${w*0.58},${midY} L${w},${midY}`;
+  const color = pct > 0.6 ? 'var(--barn)' : pct > 0.25 ? 'var(--gold)' : 'var(--pine-light)';
+  return `<svg class="pulse-svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">
+    <path d="${path}" fill="none" stroke="${color}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+  </svg>`;
+}
+
+/* =====================================================================
+   HELPERS
+===================================================================== */
+function timeAgo(ts){
+  const ms = typeof ts === 'number' ? ts : new Date(ts).getTime();
+  const s = Math.floor((Date.now()-ms)/1000);
+  if(s<60) return 'just now';
+  if(s<3600) return Math.floor(s/60)+'m ago';
+  if(s<86400) return Math.floor(s/3600)+'h ago';
+  return Math.floor(s/86400)+'d ago';
+}
+function escapeHtml(str){
+  const d = document.createElement('div'); d.textContent = str; return d.innerHTML;
+}
+function uid(){ return 't'+Math.random().toString(36).slice(2,10); }
+
+function renderAgreements(compact){
+  if(compact){
+    if(!compactReminderOpen){
+      return `<button class="info-toggle compact-variant" data-toggle-compact-agreements="1">ⓘ Posting reminder — stay on topic, no personal attacks, harassment, threats, abusive language, or profanity. Tap for full policy.</button>`;
+    }
+    return `
+    <div class="agreements-panel compact">
+      <strong>A reminder before you post:</strong> as adapted from Section F of the <a href="#" data-open-section-f="1">Select Board's public comment rules</a>, comments must be addressed to the topic, not to individuals, and must not include personal, threatening, or profane remarks. Bethel Town Common also treats abusive or harassing language as a violation. Content that violates these agreements may be removed at a moderator's discretion. It takes 3 separate reports — not just one person — before a post is pulled from public view and escalated for review. A first removal will not necessarily stop you from posting again; a second removal will block your email from posting further. The moderator reserves the right to block an email immediately after a single violation if it is deemed severe.
+      <div style="margin-top:8px;"><button class="agreements-collapse-btn" data-toggle-compact-agreements="1">Collapse</button></div>
+    </div>`;
+  }
+  const itemsHtml = AGREEMENT_ITEMS.map(item=>{
+    const open = !!agreementItemsOpen[item.id];
+    return `
+    <div style="${open ? 'grid-column:1/-1;' : ''}">
+      <button class="info-toggle" style="width:100%;justify-content:space-between;text-align:left;margin-bottom:0;font-size:12px;" data-toggle-agreement-item="${item.id}">
+        <span>${escapeHtml(item.label)}</span><span>${open ? '−' : 'ⓘ'}</span>
+      </button>
+      ${open ? `<div style="font-size:12.5px;color:var(--ink);padding:10px 12px;background:var(--paper-dim);border-radius:var(--radius);margin-top:4px;">${item.detail}</div>` : ''}
+    </div>`;
+  }).join('');
+  return `
+  <div class="agreements-panel">
+    <h3 style="font-size:15px;margin-bottom:8px;">Community agreements</h3>
+    <p style="font-size:13px;margin:0 0 10px;">Given the expectations set for public comment at Select Board meetings, which you can <a href="#" data-open-section-f="1">review here (Section F, excerpted)</a>, the following expectations apply to any engagement and participation in this forum. <a href="${CONFIG.rulesUrl}" target="_blank" rel="noopener" style="font-size:12px;">(Full Rules of Procedure)</a></p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">${itemsHtml}</div>
+  </div>`;
+}
+
+/* =====================================================================
+   RENDER: ROUTER
+===================================================================== */
+function render(){
+  const app = document.getElementById('app');
+  const navTabs = document.getElementById('navTabs');
+  if(currentTab === 'about'){
+    if(navTabs) navTabs.style.display = 'none';
+    app.innerHTML = renderAbout();
+    attachHandlers();
+    return;
+  }
+  if(navTabs) navTabs.style.display = '';
+  if(storageError){
+    app.innerHTML = `<div class="empty"><h3>Can't reach the discussion database</h3><p>Check the Supabase URL and key in the CONFIG block, and that the table's Row Level Security policies are set up.</p></div>`;
+    return;
+  }
+  if(currentTab === 'home' && !currentTopicId) app.innerHTML = renderHome();
+  else if(currentTopicId) app.innerHTML = renderThread(currentTopicId);
+  else if(currentTab === 'digest') app.innerHTML = renderDigest();
+  else if(currentTab === 'new') app.innerHTML = renderNewTopicForm();
+  else if(currentTab === 'moderate') app.innerHTML = renderModeration();
+  attachHandlers();
+}
+
+function renderAbout(){
+  return `
+    <div class="thread-post">
+      <p style="font-size:14px;margin:0 0 12px;">Vermont towns have long had commons — shared spaces for neighbors to gather. Bethel has several: the bandshell, the ball fields, Town Hall, the school gymnasium. We gather at the white church, at J&amp;J's, at Babe's, at the new Bethel Arts Center.</p>
+      <p style="font-size:14px;margin:0 0 12px;">Bethel Town Common is the same idea. A place for residents to talk through what matters to us most, from budgets to back roads. Vermonters have been known to have a healthy debate, but we're neighbors, friends, and family first. What we have in common far outweighs our differences, starting with our love for Bethel.</p>
+      <p style="font-size:14px;margin:0 0 12px;">It's the intention of Bethel Town Common to be a place that helps gather residents' input and discussion on town topics. These conversations aren't official town business, and nothing here is binding — that only happens at posted Select Board meetings. This is simply one more way for residents to be heard.</p>
+      <p style="font-size:14px;margin:0;">This isn't only for town business, either. Bethel Town Common is just as much a place to build community — start a thread if you're looking for others who share a hobby, want to get a book club going, try and plan a themed community meal, or just want the town's honest opinion on which internet provider or mechanic to use. Building community is exactly what a common is for.</p>
+    </div>
+    <div class="form-panel">
+      <h2 style="font-size:17px;margin-bottom:14px;">How are you visiting today?</h2>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <button class="btn-primary" data-choose-role="resident" style="padding:12px;font-size:14px;">I'm a community member</button>
+        <button class="btn-primary" data-choose-role="staff" style="padding:12px;font-size:14px;background:var(--gold);color:var(--pine-deep);">I'm Town Staff</button>
+        <button class="btn-primary" data-choose-role="board" style="padding:12px;font-size:14px;background:var(--paper-dim);color:var(--ink);border:1px solid var(--line);">I'm a Select Board Member</button>
+      </div>
+      <p style="font-size:11.5px;color:var(--ink-soft);margin-top:12px;margin-bottom:0;">Select Board Members can read everything here, but per Vermont's Open Meeting Law, can't reply or start discussions on the platform.</p>
+    </div>
+  `;
+}
+
+function renderHome(){
+  let list = topics.filter(t=>!t.hidden);
+  if(currentSearch.trim()){
+    const q = currentSearch.trim().toLowerCase();
+    list = list.filter(t => t.title.toLowerCase().includes(q) || t.body.toLowerCase().includes(q));
+  }
+  if(currentCategoryFilter){
+    list = list.filter(t => t.category === currentCategoryFilter);
+  }
+  if(viewerRole === 'board' && showOnlyFlagged){
+    list = list.filter(t => isFlaggedForMeeting(t.id));
+  }
+  if(currentSort === 'rising') list.sort((a,b)=>momentum(b)-momentum(a));
+  else if(currentSort === 'new') list.sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
+  else if(currentSort === 'discussed') list.sort((a,b)=>b.replies.length-a.replies.length);
+
+  const cards = list.map(t=>{
+    const score = momentum(t);
+    return `
+    <div class="card" data-open="${t.id}">
+      <div class="badges">
+        <span class="badge category">${escapeHtml(t.category)}</span>
+        ${t.poll ? '<span class="badge official">🗳️ Poll</span>' : ''}
+        ${t.author_type==='staff' ? '<span class="badge official">Town Management</span>' : ''}
+        ${t.residency && t.residency !== 'Bethel' ? `<span class="badge neighbor">🏘️ ${escapeHtml(t.residency)}</span>` : ''}
+        ${isClosed(t) ? '<span class="badge closed">Closed</span>' : ''}
+        ${viewerRole==='board' && isFlaggedForMeeting(t.id) ? '<span class="badge official">📌 Flagged (private)</span>' : ''}
+      </div>
+      <h3>${escapeHtml(t.title)}</h3>
+      <div class="snippet">${escapeHtml(t.body)}</div>
+      <div class="card-meta">
+        <div class="byline mono">${escapeHtml(t.author_name)} · ${timeAgo(t.created_at)}</div>
+        <div style="display:flex;align-items:center;gap:14px;">
+          <div class="stats">
+            ${t.poll ? `<span class="stat">🗳️ ${pollTotalVotes(t)} votes</span>` : `
+            <span class="stat">👍 ${t.reactions.support}</span>
+            <span class="stat">⚠️ ${t.reactions.concern}</span>
+            <span class="stat">💡 ${t.reactions.idea}</span>`}
+            <span class="stat">💬 ${t.replies.length}</span>
+          </div>
+          <div class="pulse-wrap">${pulseSVG(score)}</div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  return `
+    <p style="font-size:13px;color:var(--ink-soft);margin:0 0 14px;">A reminder: this page is for generating discussion only — nothing posted here has decision-making power. Other ways to stay engaged: email <a href="https://townofbethelvt.com/town-manager" target="_blank" rel="noopener">Town Management</a> or a <a href="https://townofbethelvt.com/selectboard" target="_blank" rel="noopener">Select Board member</a> directly, stop by the <a href="https://www.townofbethelvt.com" target="_blank" rel="noopener">Town Office</a> in person, or attend a Select Board meeting — held every 2nd and 4th Monday at 6 PM at <a href="https://www.google.com/maps/dir/?api=1&destination=318+Main+St%2C+Bethel%2C+VT+05032" target="_blank" rel="noopener">Bethel Town Hall (get directions)</a>. There's plenty of on-site parking, with an accessible entrance in the rear, and time set aside for public comment.</p>
+    ${renderAgreements(false)}
+    <div class="toolbar">
+      <div class="sort-group" style="align-items:center;">
+        <button data-sort="rising" class="${currentSort==='rising'?'active':''}">Rising</button>
+        <button data-sort="new" class="${currentSort==='new'?'active':''}">New</button>
+        <button data-sort="discussed" class="${currentSort==='discussed'?'active':''}">Most discussed</button>
+        <select id="categoryFilter" style="border:1px solid var(--line);border-radius:20px;padding:5px 10px;font-size:12.5px;color:var(--ink-soft);font-family:inherit;background:var(--card);">
+          <option value="">All categories</option>
+          ${CONFIG.categories.map(c=>`<option value="${c}" ${currentCategoryFilter===c?'selected':''}>${c}</option>`).join('')}
+        </select>
+        ${viewerRole==='board' ? `
+        <label style="font-size:12.5px;color:var(--ink-soft);display:flex;align-items:center;gap:5px;">
+          <input type="checkbox" id="flaggedOnlyFilter" ${showOnlyFlagged?'checked':''}> 📌 My flagged only
+        </label>` : ''}
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="print-btn" title="Print this list">🖨️ Print list</button>
+        ${viewerRole === 'board'
+          ? `<span style="font-size:12px;color:var(--ink-soft);align-self:center;">Board members read discussions here but don't start them, per Open Meeting Law.</span>`
+          : `<button class="new-topic-btn" id="openNewTopic">Start a discussion</button>`}
+      </div>
+    </div>
+    ${list.length ? cards : (currentSearch.trim() || currentCategoryFilter ? `<div class="empty"><h3>No matching discussions</h3><p>Try a different search term or category, or clear the filters to see everything.</p></div>` : `<div class="empty"><h3>No discussions yet</h3><p>Be the first to raise something the town should be talking about.</p></div>`)}
+  `;
+}
+
+function renderPollWidget(t, closed){
+  const hasVotedLocally = votedPolls.hasOwnProperty(t.id);
+  const canVote = !closed && viewerRole !== 'board' && !hasVotedLocally;
+  const total = pollTotalVotes(t);
+
+  const legendRows = t.poll.options.map((opt,i)=>{
+    const count = t.poll.counts[i]||0;
+    const pct = total ? Math.round(count/total*100) : 0;
+    const isMine = hasVotedLocally && votedPolls[t.id] === i;
+    return `
+    <div style="display:flex;justify-content:space-between;align-items:center;font-size:13px;padding:5px 0;border-bottom:1px solid var(--line);">
+      <span style="display:flex;align-items:center;gap:8px;">
+        <span class="dot" style="background:${POLL_COLORS[i%POLL_COLORS.length]};flex-shrink:0;"></span>
+        ${escapeHtml(opt)} ${isMine ? '<strong>(your vote)</strong>' : ''}
+      </span>
+      <span class="mono">${count} · ${pct}%</span>
+    </div>`;
+  }).join('');
+
+  const chart = `
+    <div style="display:flex;gap:22px;align-items:center;flex-wrap:wrap;margin-bottom:6px;">
+      <div class="poll-pie-chart" style="width:110px;height:110px;border-radius:50%;flex-shrink:0;${pollPieChart(t)}" role="img" aria-label="Pie chart of poll results"></div>
+      <div style="flex:1;min-width:200px;">${legendRows}</div>
+    </div>
+  `;
+
+  const voteForm = canVote ? `
+    <div class="poll-vote-form" style="margin-top:14px;">
+      <div class="radio-row" style="flex-direction:column;align-items:flex-start;gap:8px;margin-bottom:10px;">
+        ${t.poll.options.map((opt,i)=>`<label><input type="radio" name="pollChoice" value="${i}"> ${escapeHtml(opt)}</label>`).join('')}
+      </div>
+      <input type="text" id="pollVoteEmail" placeholder="Your email (used only to prevent duplicate votes)" style="width:100%;margin-bottom:8px;border:1px solid var(--line);border-radius:var(--radius);padding:8px 10px;font-family:inherit;font-size:13px;">
+      <button class="btn-primary vote-btn" data-cast-vote="${t.id}">Vote</button>
+    </div>
+  ` : `
+    <p style="font-size:12.5px;color:var(--ink-soft);margin-top:8px;">
+      ${hasVotedLocally ? "You've already voted in this poll." : closed ? 'This poll is closed to new votes.' : viewerRole==='board' ? 'Viewing as Select Board Member — results shown for reference only.' : ''}
+    </p>
+  `;
+
+  return `
+    <div style="margin-top:14px;">
+      ${chart}
+      <div style="font-size:12px;color:var(--ink-soft);margin-top:2px;">${total} total vote${total===1?'':'s'}</div>
+      ${voteForm}
+    </div>
+  `;
+}
+
+function renderThread(id){
+  const t = topics.find(x=>x.id===id);
+  if(!t) { currentTopicId = null; return renderHome(); }
+
+  if(t.hidden && !isModerator){
+    return `
+      <button class="back-link" id="backHome">&larr; All discussions</button>
+      <div class="empty"><h3>This discussion is under review</h3><p>It was flagged by enough people that it's been pulled from public view while a moderator takes a look.</p></div>
+    `;
+  }
+
+  const score = momentum(t);
+  const closed = isClosed(t);
+  const canReply = viewerRole !== 'board' && !closed;
+  const visibleReplies = t.replies.filter(r=>!r.hidden || isModerator);
+
+  const replies = visibleReplies.map((r)=>{
+    const realIndex = t.replies.indexOf(r);
+    if(editingReply && editingReply.topicId===t.id && editingReply.index===realIndex){
+      return `
+      <div class="reply">
+        <textarea id="editReplyBody-${realIndex}" style="width:100%;min-height:70px;">${escapeHtml(r.body)}</textarea>
+        <div class="row" style="margin-top:8px;">
+          <button class="btn-primary" data-save-reply-edit="${realIndex}" data-id="${t.id}">Save</button>
+          <button class="report-btn" data-cancel-reply-edit="1">Cancel</button>
+        </div>
+      </div>`;
+    }
+    return `
+    <div class="reply">
+      <div class="reply-meta">
+        <span class="mono" style="font-weight:600;">${escapeHtml(r.authorName)}</span>
+        ${r.authorType==='staff' ? '<span class="badge official">Town Management</span>' : ''}
+        ${r.residency && r.residency !== 'Bethel' ? `<span class="badge neighbor">🏘️ ${escapeHtml(r.residency)}</span>` : ''}
+        ${r.hidden ? '<span class="badge official" style="background:var(--gold-soft);color:var(--gold-deep);">Hidden (moderator view)</span>' : ''}
+        <span>· ${timeAgo(r.createdAt)}</span>
+      </div>
+      <div class="reply-body">${escapeHtml(r.body)}</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;">
+        <button class="report-btn" data-report-reply="${realIndex}" data-id="${t.id}" ${flaggedMap[t.id+'_r'+realIndex]?'disabled':''}>🚩 ${flaggedMap[t.id+'_r'+realIndex] ? 'Reported' : 'Report'}</button>
+        <button class="report-btn" data-edit-reply="${realIndex}" data-id="${t.id}">✏️ Edit</button>
+        <button class="report-btn" data-delete-reply="${realIndex}" data-id="${t.id}">🗑️ Delete</button>
+      </div>
+    </div>
+  `;}).join('') || '<p style="color:var(--ink-soft);font-size:13.5px;">No replies yet.</p>';
+
+  const postSection = editingTopic===t.id ? `
+    <div class="thread-post">
+      <div class="field"><label>Title</label><input type="text" id="editTopicTitle" value="${escapeHtml(t.title)}"></div>
+      <div class="field"><label>Category</label>
+        <select id="editTopicCategory">${CONFIG.categories.map(c=>`<option value="${c}" ${c===t.category?'selected':''}>${c}</option>`).join('')}</select>
+      </div>
+      <div class="field"><label>Details</label><textarea id="editTopicBody">${escapeHtml(t.body)}</textarea></div>
+      <div class="row" style="display:flex;gap:8px;">
+        <button class="btn-primary" data-save-topic-edit="${t.id}">Save changes</button>
+        <button class="report-btn" data-cancel-topic-edit="1">Cancel</button>
+      </div>
+    </div>
+  ` : `
+    <div class="thread-post">
+      <div class="badges">
+        <span class="badge category">${escapeHtml(t.category)}</span>
+        ${t.author_type==='staff' ? '<span class="badge official">Town Management</span>' : ''}
+        ${t.residency && t.residency !== 'Bethel' ? `<span class="badge neighbor">🏘️ ${escapeHtml(t.residency)}</span>` : ''}
+        ${closed ? '<span class="badge closed">Closed</span>' : ''}
+      </div>
+      <h2>${escapeHtml(t.title)}</h2>
+      <div class="byline mono">${escapeHtml(t.author_name)} · ${timeAgo(t.created_at)}</div>
+      <div class="thread-body">${escapeHtml(t.body)}</div>
+      ${t.poll ? renderPollWidget(t, closed) : `
+      <div class="reaction-row">
+        <button class="reaction-btn ${reactedMap[id+'_support']?'active':''}" data-react="support" data-id="${id}" ${closed?'disabled':''}>👍 Support (${t.reactions.support})</button>
+        <button class="reaction-btn ${reactedMap[id+'_concern']?'active':''}" data-react="concern" data-id="${id}" ${closed?'disabled':''}>⚠️ Concern (${t.reactions.concern})</button>
+        <button class="reaction-btn ${reactedMap[id+'_idea']?'active':''}" data-react="idea" data-id="${id}" ${closed?'disabled':''}>💡 Idea (${t.reactions.idea})</button>
+      </div>
+      `}<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;">
+        <button class="report-btn" data-report-topic="${t.id}" ${flaggedMap[t.id+'_topic']?'disabled':''}>🚩 ${flaggedMap[t.id+'_topic'] ? 'Reported' : 'Report'}</button>
+        <button class="report-btn" data-edit-topic="${t.id}">✏️ Edit</button>
+        <button class="report-btn" data-delete-topic="${t.id}">🗑️ Delete</button>
+        <button class="print-btn" title="Print this discussion">🖨️ Print</button>
+      </div>
+      <div style="margin-top:12px;"><span class="pulse-label">Momentum</span> ${pulseSVG(score)}</div>
+    </div>
+  `;
+
+  return `
+    <button class="back-link" id="backHome">&larr; All discussions</button>
+    ${postSection}
+
+    <div class="replies-heading">Replies (${visibleReplies.length})</div>
+    ${replies}
+
+    ${canReply ? `
+    <div class="reply-form">
+      ${renderAgreements(true)}
+      <input type="text" id="replyName" placeholder="Your name (or 'Neighbor on Elm St')" style="width:100%;margin-bottom:8px;">
+      <input type="text" id="replyEmail" placeholder="Your email (kept private — only used if flagged for violating the community agreements)" style="width:100%;margin-bottom:8px;">
+      <select id="replyResidency" style="width:100%;margin-bottom:6px;border:1px solid var(--line);border-radius:var(--radius);padding:8px 10px;font-family:inherit;font-size:13px;background:#fff;">
+        <option value="Bethel">Bethel resident</option>
+        ${CONFIG.neighboringTowns.map(t=>`<option value="${t}">${t} resident</option>`).join('')}
+        <option value="__other__">Other town</option>
+      </select>
+      <input type="text" id="replyResidencyOther" placeholder="Which town?" style="width:100%;margin-bottom:8px;display:none;border:1px solid var(--line);border-radius:var(--radius);padding:8px 10px;font-family:inherit;font-size:13px;">
+      <textarea id="replyBody" placeholder="Add your perspective..."></textarea>
+      <label style="font-size:12.5px;display:flex;align-items:center;gap:6px;margin-top:8px;">
+        <input type="checkbox" id="replyDownloadCopy"> Download a copy of this reply for my records (useful if it's ever flagged)
+      </label>
+      <div class="row">
+        <label style="font-size:12.5px;display:flex;align-items:center;gap:6px;">
+          <input type="checkbox" id="replyAsStaff" ${viewerRole==='staff'?'checked':''}> Posting as Town Management
+        </label>
+        <button class="btn-primary" id="submitReply">Post reply</button>
+      </div>
+      <p style="font-size:11px;color:var(--ink-soft);margin-top:8px;margin-bottom:0;">By posting, you agree to follow the community agreements above.</p>
+    </div>
+    ` : viewerRole === 'board' ? `
+    <div class="law-banner">
+      <strong>Viewing as Select Board Member:</strong> per Vermont's Open Meeting Law, board members read discussions here but don't reply or deliberate in this space. Bring what you're hearing to a posted meeting instead.
+    </div>
+    <div class="agreements-panel" style="margin-top:10px;">
+      <h3 style="font-size:14px;margin-bottom:6px;">Private notes <span style="font-weight:400;text-transform:none;font-size:12px;color:var(--ink-soft);">— visible only to you, on this device</span></h3>
+      <p style="font-size:12px;color:var(--ink-soft);margin:0 0 10px;">These notes are stored only in this browser. They are never sent to the server, never shown publicly, and never visible to other board members or town staff — this is just a personal reminder for you to bring something to a posted meeting.</p>
+      <button class="report-btn" data-toggle-meeting-flag="${t.id}">${isFlaggedForMeeting(t.id) ? '📌 Flagged for next meeting — remove' : '📌 Flag for next meeting'}</button>
+      <textarea id="meetingNote-${t.id}" placeholder="Private note to yourself about this topic..." style="width:100%;min-height:60px;margin-top:10px;border:1px solid var(--line);border-radius:var(--radius);padding:8px 10px;font-family:inherit;font-size:13px;">${escapeHtml((myMeetingFlags[t.id]&&myMeetingFlags[t.id].note)||'')}</textarea>
+      <button class="btn-primary" data-save-meeting-note="${t.id}" style="margin-top:8px;">Save note</button>
+    </div>
+    ` : `
+    <div class="law-banner">
+      <strong>This discussion is closed.</strong> ${closedReason(t)==='date' ? "Its creator set a closing date that has passed." : `It's had no new replies in over ${CONFIG.autoCloseMonths} months, so it's automatically closed to new activity.`} It's still here to read and print, just not open for new replies or reactions.
+    </div>
+    `}
+  `;
+}
+
+function renderNewTopicForm(){
+  if(viewerRole === 'board'){
+    return `
+      <button class="back-link" id="backHome">&larr; All discussions</button>
+      <div class="law-banner">
+        <strong>Viewing as Select Board Member:</strong> per Vermont's Open Meeting Law, board members read discussions and the summary here but don't start new discussions or polls, since that would mean one member acting on the body's behalf without a delegation vote. Bring what you'd like discussed to a posted meeting instead.
+      </div>
+    `;
+  }
+  const opts = CONFIG.categories.map(c=>`<option value="${c}">${c}</option>`).join('');
+  const staffDefault = viewerRole === 'staff';
+  const isPoll = postKind === 'poll';
+
+  const optionRows = newPollOptions.map((val,i)=>`
+    <div class="row" style="display:flex;gap:6px;margin-bottom:6px;">
+      <input type="text" class="poll-option-input" data-idx="${i}" value="${escapeHtml(val)}" placeholder="Option ${i+1}" style="flex:1;border:1px solid var(--line);border-radius:var(--radius);padding:8px 10px;font-family:inherit;font-size:13.5px;">
+      ${newPollOptions.length > 2 ? `<button class="report-btn" data-remove-poll-option="${i}" type="button">✕</button>` : ''}
+    </div>
+  `).join('');
+
+  return `
+    <button class="back-link" id="backHome">&larr; Cancel</button>
+    <div class="form-panel">
+      <h2 style="font-size:20px;margin-bottom:16px;">${isPoll ? 'Create a poll' : 'Start a discussion'}</h2>
+      ${renderAgreements(true)}
+      <div class="field">
+        <label>Type</label>
+        <div class="radio-row">
+          <label><input type="radio" name="postKind" value="discussion" ${isPoll?'':'checked'}> Discussion</label>
+          <label><input type="radio" name="postKind" value="poll" ${isPoll?'checked':''}> Poll</label>
+        </div>
+      </div>
+      <div class="field">
+        <label>${isPoll ? 'Poll question' : 'Title'}</label>
+        <input type="text" id="newTitle" placeholder="${isPoll ? 'What should we ask residents?' : 'What should the town be talking about?'}">
+      </div>
+      ${isPoll ? `
+      <div class="field">
+        <label>Options</label>
+        <div id="pollOptionsWrap">${optionRows}</div>
+        ${newPollOptions.length < CONFIG.maxPollOptions ? '<button class="report-btn" id="addPollOption" type="button">+ Add option</button>' : ''}
+      </div>
+      <div class="field">
+        <label>More context <span style="text-transform:none;font-weight:400;">(optional)</span></label>
+        <textarea id="newBody" placeholder="Give people enough background to vote thoughtfully."></textarea>
+      </div>
+      ` : `
+      <div class="field">
+        <label>Details</label>
+        <textarea id="newBody" placeholder="Give people enough context to weigh in with an informed opinion."></textarea>
+      </div>
+      `}
+      <div class="field">
+        <label>Category</label>
+        <select id="newCategory">${opts}</select>
+      </div>
+      <div class="field">
+        <label>Your name</label>
+        <input type="text" id="newName" placeholder="How you'd like to appear">
+      </div>
+      <div class="field">
+        <label>Your email <span style="text-transform:none;font-weight:400;">— kept private, only used if a post is flagged for violating the community agreements</span></label>
+        <input type="text" id="newEmail" placeholder="you@example.com">
+      </div>
+      <div class="field">
+        <label>Are you a Bethel resident?</label>
+        <select id="newResidency">
+          <option value="Bethel">Bethel resident</option>
+          ${CONFIG.neighboringTowns.map(t=>`<option value="${t}">${t} resident</option>`).join('')}
+          <option value="__other__">Other town</option>
+        </select>
+        <input type="text" id="newResidencyOther" placeholder="Which town?" style="display:none;margin-top:6px;">
+      </div>
+      <div class="field">
+        <label>Posting as</label>
+        <div class="radio-row">
+          <label><input type="radio" name="authorType" value="resident" ${staffDefault?'':'checked'}> Resident</label>
+          <label><input type="radio" name="authorType" value="staff" ${staffDefault?'checked':''}> Town Management</label>
+        </div>
+      </div>
+      <div class="field" id="passphraseField" style="display:${staffDefault?'block':'none'};">
+        <label>Town management passphrase</label>
+        <input type="text" id="newPassphrase" placeholder="Ask the town office if you don't have this">
+      </div>
+      <div class="field">
+        <label>How long should this stay ${isPoll ? 'open for voting' : 'open'}?</label>
+        <div class="radio-row">
+          <label><input type="radio" name="closeMode" value="indefinite" checked> Open indefinitely</label>
+          <label><input type="radio" name="closeMode" value="date"> Close on a specific date</label>
+        </div>
+      </div>
+      <div class="field" id="closeDateField" style="display:none;">
+        <label>Closing date</label>
+        <input type="date" id="closesAtInput">
+      </div>
+      <div class="field">
+        <label style="font-size:12.5px;text-transform:none;font-weight:400;display:flex;align-items:center;gap:6px;">
+          <input type="checkbox" id="newDownloadCopy"> Download a copy of this post for my records (useful if it's ever flagged)
+        </label>
+      </div>
+      <button class="btn-primary" id="submitNewTopic">${isPoll ? 'Post poll' : 'Post discussion'}</button>
+      <p style="font-size:11px;color:var(--ink-soft);margin-top:8px;margin-bottom:0;">By posting, you agree to follow the community agreements above.</p>
+    </div>
+  `;
+}
+
+function renderDigest(){
+  let sorted = topics.filter(t=>!t.hidden);
+  if(digestCategoryFilter) sorted = sorted.filter(t=>t.category===digestCategoryFilter);
+  sorted = sorted.sort((a,b)=>momentum(b)-momentum(a));
+  const rows = sorted.map(t=>{
+    if(t.poll){
+      const total = pollTotalVotes(t);
+      const bars = t.poll.options.map((opt,i)=>`<div style="width:${total? (t.poll.counts[i]||0)/total*100 : 0}%;background:${POLL_COLORS[i%POLL_COLORS.length]};"></div>`).join('');
+      const legend = t.poll.options.map((opt,i)=>`<span><span class="dot" style="background:${POLL_COLORS[i%POLL_COLORS.length]};"></span>${escapeHtml(opt)}: ${t.poll.counts[i]||0}</span>`).join('');
+      return `
+      <div class="digest-row" data-open="${t.id}">
+        <div class="digest-title">🗳️ ${escapeHtml(t.title)} ${isClosed(t) ? '<span class="badge closed">Closed</span>' : ''}</div>
+        <div class="digest-bars">${bars}</div>
+        <div class="digest-legend">${legend}<span>💬 ${t.replies.length} replies</span></div>
+      </div>`;
+    }
+    const r = t.reactions;
+    const total = Math.max(r.support+r.concern+r.idea, 1);
+    return `
+    <div class="digest-row" data-open="${t.id}">
+      <div class="digest-title">${escapeHtml(t.title)} ${isClosed(t) ? '<span class="badge closed">Closed</span>' : ''}</div>
+      <div class="digest-bars">
+        <div style="width:${r.support/total*100}%;background:var(--pine-light);"></div>
+        <div style="width:${r.concern/total*100}%;background:var(--barn);"></div>
+        <div style="width:${r.idea/total*100}%;background:var(--gold);"></div>
+      </div>
+      <div class="digest-legend">
+        <span><span class="dot" style="background:var(--pine-light);"></span>${r.support} support</span>
+        <span><span class="dot" style="background:var(--barn);"></span>${r.concern} concern</span>
+        <span><span class="dot" style="background:var(--gold);"></span>${r.idea} ideas</span>
+        <span>💬 ${t.replies.length} replies</span>
+      </div>
+    </div>`;
+  }).join('') || (digestCategoryFilter
+    ? `<div class="empty"><h3>Nothing in this category yet</h3><p>Try a different category, or clear the filter to see everything.</p></div>`
+    : `<div class="empty"><h3>Nothing to summarize yet</h3><p>Once discussions get going, the highest-momentum ones will surface here first.</p></div>`);
+
+  return `
+    <div class="digest-note">
+      Sorted by momentum — reactions and replies combined. Read as few or as many replies as you have time for; the bars below show the shape of opinion at a glance before you open anything.
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:14px;">
+      <select id="digestCategoryFilter" style="border:1px solid var(--line);border-radius:20px;padding:5px 10px;font-size:12.5px;color:var(--ink-soft);font-family:inherit;background:var(--card);">
+        <option value="">All categories</option>
+        ${CONFIG.categories.map(c=>`<option value="${c}" ${digestCategoryFilter===c?'selected':''}>${c}</option>`).join('')}
+      </select>
+      <button class="print-btn" title="Print this summary">🖨️ Print summary</button>
+    </div>
+    ${rows}
+  `;
+}
+
+function renderModeration(){
+  if(!isModerator){
+    return `<div class="empty"><h3>Moderator access needed</h3><p>Use the "change" link at the top to enter the moderator passphrase, or click the Moderate tab again.</p></div>`;
+  }
+  const flaggedTopics = topics.filter(t=>t.flags>0 || t.hidden);
+  const flaggedReplyRows = [];
+  topics.forEach(t=>{
+    t.replies.forEach((r,i)=>{
+      if((r.flags||0) > 0 || r.hidden) flaggedReplyRows.push({topic:t, reply:r, index:i});
+    });
+  });
+
+  const topicRows = flaggedTopics.map(t=>`
+    <div class="digest-row">
+      <div class="digest-title">${escapeHtml(t.title)} ${t.hidden ? '<span class="badge official" style="background:var(--gold-soft);color:var(--gold-deep);">Hidden</span>' : ''}</div>
+      <p style="font-size:13px;color:var(--ink-soft);margin:6px 0;">${escapeHtml(t.body).slice(0,160)}${t.body.length>160?'…':''}</p>
+      <p style="font-size:12px;color:var(--ink-soft);">Reports: ${t.flags||0} · Contact on file: ${t.contact_email ? escapeHtml(t.contact_email) : '—'} · Prior violations: ${violationCount(t.contact_email)}</p>
+      <div class="row" style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;">
+        <button class="btn-primary" data-mod-restore-topic="${t.id}">Dismiss reports &amp; restore</button>
+        <button class="new-topic-btn" data-mod-delete-topic="${t.id}">Delete permanently</button>
+        ${t.contact_email ? `<button class="report-btn" data-mod-block-email="${escapeHtml(t.contact_email)}">🚫 Block this email</button>` : ''}
+      </div>
+    </div>
+  `).join('');
+
+  const replyRows = flaggedReplyRows.map(({topic,reply,index})=>`
+    <div class="digest-row">
+      <div class="digest-title">Reply on: ${escapeHtml(topic.title)} ${reply.hidden ? '<span class="badge official" style="background:var(--gold-soft);color:var(--gold-deep);">Hidden</span>' : ''}</div>
+      <p style="font-size:13px;color:var(--ink-soft);margin:6px 0;">"${escapeHtml(reply.body).slice(0,160)}${reply.body.length>160?'…':''}" — ${escapeHtml(reply.authorName)}</p>
+      <p style="font-size:12px;color:var(--ink-soft);">Reports: ${reply.flags||0} · Contact on file: ${reply.contactEmail ? escapeHtml(reply.contactEmail) : '—'} · Prior violations: ${violationCount(reply.contactEmail)}</p>
+      <div class="row" style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;">
+        <button class="btn-primary" data-mod-restore-reply="${index}" data-topic-id="${topic.id}">Dismiss reports &amp; restore</button>
+        <button class="new-topic-btn" data-mod-delete-reply="${index}" data-topic-id="${topic.id}">Delete permanently</button>
+        ${reply.contactEmail ? `<button class="report-btn" data-mod-block-email="${escapeHtml(reply.contactEmail)}">🚫 Block this email</button>` : ''}
+      </div>
+    </div>
+  `).join('');
+
+  const blockedRows = [...blockedEmails].map(email=>`
+    <div class="digest-row" style="cursor:default;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+      <span class="mono" style="font-size:13px;">${escapeHtml(email)}</span>
+      <button class="report-btn" data-mod-unblock-email="${escapeHtml(email)}">Unblock</button>
+    </div>
+  `).join('') || '<p style="color:var(--ink-soft);font-size:13.5px;">No blocked emails.</p>';
+
+  return `
+    <div class="digest-note">Moderator view — flagged discussions and replies land here for review. Nothing here is visible to residents unless you restore it.</div>
+    <h3 style="font-size:15px;margin-bottom:10px;">Flagged discussions</h3>
+    ${topicRows || '<p style="color:var(--ink-soft);font-size:13.5px;margin-bottom:20px;">Nothing flagged right now.</p>'}
+    <h3 style="font-size:15px;margin:24px 0 10px;">Flagged replies</h3>
+    ${replyRows || '<p style="color:var(--ink-soft);font-size:13.5px;">Nothing flagged right now.</p>'}
+
+    <h3 style="font-size:15px;margin:24px 0 10px;">Blocked emails</h3>
+    <p style="font-size:12.5px;color:var(--ink-soft);margin-bottom:10px;">Blocking an email prevents it from posting new topics or replies. It doesn't remove anything already posted.</p>
+    <div class="form-panel" style="margin-bottom:14px;">
+      <div class="row" style="display:flex;gap:8px;flex-wrap:wrap;">
+        <input type="text" id="manualBlockEmail" placeholder="email@example.com" style="flex:1;min-width:200px;border:1px solid var(--line);border-radius:var(--radius);padding:8px 10px;font-family:inherit;font-size:13px;">
+        <button class="btn-primary" id="manualBlockBtn">Block email</button>
+      </div>
+    </div>
+    ${blockedRows}
+  `;
+}
+
+/* =====================================================================
+   EVENT HANDLING
+===================================================================== */
+function attachHandlers(){
+  document.querySelectorAll('[data-choose-role]').forEach(el=>{
+    el.addEventListener('click', ()=>{ chooseRole(el.getAttribute('data-choose-role')); });
+  });
+  document.querySelectorAll('.print-btn').forEach(el=>{
+    el.addEventListener('click', ()=>window.print());
+  });
+  document.querySelectorAll('[data-open-section-f]').forEach(el=>{
+    el.addEventListener('click', (e)=>{ e.preventDefault(); openSectionFPdf(); });
+  });
+  document.querySelectorAll('[data-toggle-compact-agreements]').forEach(el=>{
+    el.addEventListener('click', ()=>{ compactReminderOpen = !compactReminderOpen; render(); });
+  });
+  document.querySelectorAll('[data-toggle-agreement-item]').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      const id = el.getAttribute('data-toggle-agreement-item');
+      agreementItemsOpen[id] = !agreementItemsOpen[id];
+      render();
+    });
+  });
+
+  document.querySelectorAll('input[name=postKind]').forEach(r=>r.addEventListener('change', ()=>{
+    postKind = document.querySelector('input[name=postKind]:checked').value;
+    render();
+  }));
+  document.querySelectorAll('.poll-option-input').forEach(el=>{
+    el.addEventListener('input', ()=>{
+      const idx = parseInt(el.getAttribute('data-idx'),10);
+      newPollOptions[idx] = el.value;
+    });
+  });
+  const addPollOptionBtn = document.getElementById('addPollOption');
+  if(addPollOptionBtn) addPollOptionBtn.addEventListener('click', ()=>{
+    if(newPollOptions.length < CONFIG.maxPollOptions){ newPollOptions.push(''); render(); }
+  });
+  document.querySelectorAll('[data-remove-poll-option]').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      const idx = parseInt(el.getAttribute('data-remove-poll-option'),10);
+      if(newPollOptions.length > 2){ newPollOptions.splice(idx,1); render(); }
+    });
+  });
+  document.querySelectorAll('[data-cast-vote]').forEach(el=>{
+    el.addEventListener('click', async ()=>{
+      const id = el.getAttribute('data-cast-vote');
+      const t = topics.find(x=>x.id===id);
+      if(!t) return;
+      const chosen = document.querySelector('input[name=pollChoice]:checked');
+      const email = document.getElementById('pollVoteEmail').value.trim();
+      if(!chosen){ alert('Pick an option before voting.'); return; }
+      if(!isValidEmail(email)){ alert('Enter a valid email — it\'s only used to prevent duplicate votes and is never shown publicly.'); return; }
+      if(isBlocked(email)){ alert('This email address can\'t participate right now. If you think this is a mistake, contact the town office.'); return; }
+      try{
+        await castVote(t, email, parseInt(chosen.value,10));
+      }catch(e){
+        if(e.message === 'DUPLICATE') alert('This email has already voted in this poll.');
+        else { console.error(e); alert('Could not record your vote — check your connection.'); }
+        return;
+      }
+      render();
+    });
+  });
+
+  document.querySelectorAll('[data-toggle-meeting-flag]').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      const id = el.getAttribute('data-toggle-meeting-flag');
+      if(!myMeetingFlags[id]) myMeetingFlags[id] = { flagged:false, note:'' };
+      myMeetingFlags[id].flagged = !myMeetingFlags[id].flagged;
+      saveMeetingFlags();
+      render();
+    });
+  });
+  document.querySelectorAll('[data-save-meeting-note]').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      const id = el.getAttribute('data-save-meeting-note');
+      const note = document.getElementById('meetingNote-'+id).value;
+      if(!myMeetingFlags[id]) myMeetingFlags[id] = { flagged:false, note:'' };
+      myMeetingFlags[id].note = note;
+      saveMeetingFlags();
+      alert('Note saved — visible only to you, on this device.');
+    });
+  });
+  const flaggedOnlyEl = document.getElementById('flaggedOnlyFilter');
+  if(flaggedOnlyEl) flaggedOnlyEl.addEventListener('change', ()=>{ showOnlyFlagged = flaggedOnlyEl.checked; render(); });
+
+  document.querySelectorAll('[data-open]').forEach(el=>{
+    el.addEventListener('click', ()=>{ currentTopicId = el.getAttribute('data-open'); render(); window.scrollTo(0,0); });
+  });
+  document.querySelectorAll('[data-sort]').forEach(el=>{
+    el.addEventListener('click', ()=>{ currentSort = el.getAttribute('data-sort'); render(); });
+  });
+  const categoryFilterEl = document.getElementById('categoryFilter');
+  if(categoryFilterEl) categoryFilterEl.addEventListener('change', ()=>{ currentCategoryFilter = categoryFilterEl.value; render(); });
+  const digestCategoryFilterEl = document.getElementById('digestCategoryFilter');
+  if(digestCategoryFilterEl) digestCategoryFilterEl.addEventListener('change', ()=>{ digestCategoryFilter = digestCategoryFilterEl.value; render(); });
+  const openNew = document.getElementById('openNewTopic');
+  if(openNew) openNew.addEventListener('click', ()=>{ postKind='discussion'; newPollOptions=['','']; currentTab='new'; currentTopicId=null; render(); });
+
+  const back = document.getElementById('backHome');
+  if(back) back.addEventListener('click', ()=>{ postKind='discussion'; newPollOptions=['','']; currentTopicId=null; currentTab='home'; render(); });
+
+  document.querySelectorAll('[data-react]').forEach(el=>{
+    el.addEventListener('click', async ()=>{
+      const id = el.getAttribute('data-id');
+      const type = el.getAttribute('data-react');
+      const key = id+'_'+type;
+      const t = topics.find(x=>x.id===id);
+      if(!t) return;
+      if(isClosed(t)) return;
+      if(reactedMap[key]){
+        t.reactions[type] = Math.max(0, t.reactions[type]-1);
+        delete reactedMap[key];
+      }else{
+        t.reactions[type] += 1;
+        reactedMap[key] = true;
+      }
+      saveReacted();
+      try{ await updateTopic(id, {reactions: t.reactions}); }
+      catch(e){ console.error(e); alert('Could not save that reaction — check your connection.'); }
+      render();
+    });
+  });
+
+  const radios = document.querySelectorAll('input[name=authorType]');
+  radios.forEach(r=>r.addEventListener('change', ()=>{
+    document.getElementById('passphraseField').style.display =
+      document.querySelector('input[name=authorType]:checked').value === 'staff' ? 'block' : 'none';
+  }));
+
+  const closeRadios = document.querySelectorAll('input[name=closeMode]');
+  closeRadios.forEach(r=>r.addEventListener('change', ()=>{
+    document.getElementById('closeDateField').style.display =
+      document.querySelector('input[name=closeMode]:checked').value === 'date' ? 'block' : 'none';
+  }));
+
+  const newResidencyEl = document.getElementById('newResidency');
+  if(newResidencyEl) newResidencyEl.addEventListener('change', ()=>{
+    document.getElementById('newResidencyOther').style.display = newResidencyEl.value === '__other__' ? 'block' : 'none';
+  });
+  const replyResidencyEl = document.getElementById('replyResidency');
+  if(replyResidencyEl) replyResidencyEl.addEventListener('change', ()=>{
+    document.getElementById('replyResidencyOther').style.display = replyResidencyEl.value === '__other__' ? 'block' : 'none';
+  });
+
+  const submitNew = document.getElementById('submitNewTopic');
+  if(submitNew) submitNew.addEventListener('click', async ()=>{
+    const title = document.getElementById('newTitle').value.trim();
+    const body = document.getElementById('newBody').value.trim();
+    const category = document.getElementById('newCategory').value;
+    const name = document.getElementById('newName').value.trim() || 'A resident';
+    const email = document.getElementById('newEmail').value.trim();
+    const authorType = document.querySelector('input[name=authorType]:checked').value;
+    const closeMode = document.querySelector('input[name=closeMode]:checked').value;
+    const isPollSubmit = postKind === 'poll';
+
+    if(!title){ alert(isPollSubmit ? 'Please add a poll question.' : 'Please add a title and some details.'); return; }
+    if(!isPollSubmit && !body){ alert('Please add a title and some details.'); return; }
+
+    let pollPayload = null;
+    if(isPollSubmit){
+      const cleanedOptions = newPollOptions.map(o=>o.trim()).filter(Boolean);
+      if(cleanedOptions.length < 2){ alert('A poll needs at least 2 options.'); return; }
+      pollPayload = { question: title, options: cleanedOptions, counts: cleanedOptions.map(()=>0) };
+    }
+
+    if(!isValidEmail(email)){ alert('Please add a valid email — it stays private and is only used if this post needs review.'); return; }
+    if(isBlocked(email)){ alert('This email address is not able to post here right now. If you think this is a mistake, contact the town office.'); return; }
+    if(authorType === 'staff'){
+      const pass = document.getElementById('newPassphrase').value;
+      if(pass !== CONFIG.officialPassphrase){ alert('That passphrase doesn\'t match — check with the town office.'); return; }
+    }
+    let closesAt = null;
+    if(closeMode === 'date'){
+      const dateVal = document.getElementById('closesAtInput').value;
+      if(!dateVal){ alert('Pick a closing date, or switch to "Open indefinitely".'); return; }
+      closesAt = new Date(dateVal + 'T23:59:59').toISOString();
+    }
+    if(containsProfanity(title+' '+body)){
+      if(!confirm('This looks like it might include language our filter flags. Post it anyway?')) return;
+    }
+    const wantsCopy = document.getElementById('newDownloadCopy').checked;
+    const createdAt = new Date().toISOString();
+    let residency = document.getElementById('newResidency').value;
+    if(residency === '__other__'){
+      residency = document.getElementById('newResidencyOther').value.trim() || 'Other';
+    }
+    try{
+      await createTopic({
+        id: uid(), title, body, category,
+        author_type: authorType, author_name: name, contact_email: email,
+        flags: 0, hidden: false, closes_at: closesAt, poll: pollPayload, residency: residency,
+        reactions:{support:0,concern:0,idea:0}, replies:[]
+      });
+    }catch(e){ console.error(e); alert('Could not post that:\n\n' + e.message); return; }
+    if(wantsCopy) downloadPostCopy({ title, category, authorName:name, authorType, createdAt, body, kind:'topic' });
+    postKind = 'discussion'; newPollOptions = ['', ''];
+    currentTab='home'; currentSort='new'; render();
+  });
+
+  const submitReply = document.getElementById('submitReply');
+  if(submitReply) submitReply.addEventListener('click', async ()=>{
+    const t = topics.find(x=>x.id===currentTopicId);
+    const name = document.getElementById('replyName').value.trim() || 'A resident';
+    const email = document.getElementById('replyEmail').value.trim();
+    const body = document.getElementById('replyBody').value.trim();
+    const asStaff = document.getElementById('replyAsStaff').checked;
+    if(!body) return;
+    if(!isValidEmail(email)){ alert('Please add a valid email — it stays private and is only used if this reply needs review.'); return; }
+    if(isBlocked(email)){ alert('This email address is not able to post here right now. If you think this is a mistake, contact the town office.'); return; }
+    if(asStaff){
+      const pass = prompt('Town management passphrase:');
+      if(pass !== CONFIG.officialPassphrase){ alert('Passphrase didn\'t match.'); return; }
+    }
+    if(containsProfanity(body)){
+      if(!confirm('This looks like it might include language our filter flags. Post it anyway?')) return;
+    }
+    const wantsCopy = document.getElementById('replyDownloadCopy').checked;
+    const replyCreatedAt = Date.now();
+    let replyResidency = document.getElementById('replyResidency').value;
+    if(replyResidency === '__other__'){
+      replyResidency = document.getElementById('replyResidencyOther').value.trim() || 'Other';
+    }
+    t.replies.push({ authorName:name, authorType: asStaff?'staff':'resident', contactEmail: email, body, createdAt: replyCreatedAt, flags:0, hidden:false, residency: replyResidency });
+    let saveFailed = false;
+    try{ await updateTopic(t.id, {replies: t.replies}); }
+    catch(e){ console.error(e); alert('Could not save that reply — check your connection.'); t.replies.pop(); saveFailed = true; }
+    if(!saveFailed && wantsCopy) downloadPostCopy({ title:t.title, parentTitle:t.title, category:t.category, authorName:name, authorType: asStaff?'staff':'resident', createdAt: replyCreatedAt, body, kind:'reply' });
+    render();
+  });
+
+  document.querySelectorAll('[data-report-topic]').forEach(el=>{
+    el.addEventListener('click', async ()=>{
+      const id = el.getAttribute('data-report-topic');
+      const key = id+'_topic';
+      if(flaggedMap[key]) return;
+      const t = topics.find(x=>x.id===id);
+      if(!t) return;
+      flaggedMap[key] = true; saveFlagged();
+      const newFlags = (t.flags||0) + 1;
+      const patch = { flags: newFlags };
+      if(newFlags >= CONFIG.flagThreshold) patch.hidden = true;
+      try{ await updateTopic(id, patch); }catch(e){ console.error(e); }
+      render();
+    });
+  });
+
+  document.querySelectorAll('[data-report-reply]').forEach(el=>{
+    el.addEventListener('click', async ()=>{
+      const idx = parseInt(el.getAttribute('data-report-reply'),10);
+      const id = el.getAttribute('data-id');
+      const key = id+'_r'+idx;
+      if(flaggedMap[key]) return;
+      const t = topics.find(x=>x.id===id);
+      if(!t || !t.replies[idx]) return;
+      flaggedMap[key] = true; saveFlagged();
+      t.replies[idx].flags = (t.replies[idx].flags||0) + 1;
+      if(t.replies[idx].flags >= CONFIG.flagThreshold) t.replies[idx].hidden = true;
+      try{ await updateTopic(id, {replies: t.replies}); }catch(e){ console.error(e); }
+      render();
+    });
+  });
+
+  document.querySelectorAll('[data-mod-restore-topic]').forEach(el=>{
+    el.addEventListener('click', async ()=>{
+      const id = el.getAttribute('data-mod-restore-topic');
+      try{ await updateTopic(id, {flags:0, hidden:false}); }catch(e){ console.error(e); }
+      render();
+    });
+  });
+  document.querySelectorAll('[data-mod-delete-topic]').forEach(el=>{
+    el.addEventListener('click', async ()=>{
+      const id = el.getAttribute('data-mod-delete-topic');
+      const t = topics.find(x=>x.id===id);
+      if(!confirm('Delete this discussion permanently? This cannot be undone.')) return;
+      try{
+        const email = t ? t.contact_email : null;
+        await deleteTopic(id);
+        if(email){
+          const count = await recordViolation(email);
+          if(count >= 2) alert('This is that email\'s 2nd violation — it has been automatically blocked from posting further.');
+        }
+      }catch(e){ console.error(e); alert('Could not delete — check your connection.'); }
+      render();
+    });
+  });
+  document.querySelectorAll('[data-mod-restore-reply]').forEach(el=>{
+    el.addEventListener('click', async ()=>{
+      const idx = parseInt(el.getAttribute('data-mod-restore-reply'),10);
+      const tid = el.getAttribute('data-topic-id');
+      const t = topics.find(x=>x.id===tid);
+      if(!t || !t.replies[idx]) return;
+      t.replies[idx].flags = 0; t.replies[idx].hidden = false;
+      try{ await updateTopic(tid, {replies: t.replies}); }catch(e){ console.error(e); }
+      render();
+    });
+  });
+  document.querySelectorAll('[data-mod-delete-reply]').forEach(el=>{
+    el.addEventListener('click', async ()=>{
+      const idx = parseInt(el.getAttribute('data-mod-delete-reply'),10);
+      const tid = el.getAttribute('data-topic-id');
+      const t = topics.find(x=>x.id===tid);
+      if(!t || !t.replies[idx]) return;
+      if(!confirm('Delete this reply permanently? This cannot be undone.')) return;
+      const email = t.replies[idx].contactEmail;
+      t.replies.splice(idx,1);
+      try{
+        await updateTopic(tid, {replies: t.replies});
+        if(email){
+          const count = await recordViolation(email);
+          if(count >= 2) alert('This is that email\'s 2nd violation — it has been automatically blocked from posting further.');
+        }
+      }catch(e){ console.error(e); }
+      render();
+    });
+  });
+
+  document.querySelectorAll('[data-edit-topic]').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      const id = el.getAttribute('data-edit-topic');
+      const t = topics.find(x=>x.id===id);
+      if(!t) return;
+      if(!ownerCheck(t.contact_email)){ alert("That email doesn't match what this was posted with."); return; }
+      editingTopic = id; render();
+    });
+  });
+  document.querySelectorAll('[data-cancel-topic-edit]').forEach(el=>{
+    el.addEventListener('click', ()=>{ editingTopic = null; render(); });
+  });
+  document.querySelectorAll('[data-save-topic-edit]').forEach(el=>{
+    el.addEventListener('click', async ()=>{
+      const id = el.getAttribute('data-save-topic-edit');
+      const title = document.getElementById('editTopicTitle').value.trim();
+      const body = document.getElementById('editTopicBody').value.trim();
+      const category = document.getElementById('editTopicCategory').value;
+      if(!title || !body){ alert('Title and details can\'t be empty.'); return; }
+      try{ await updateTopic(id, {title, body, category}); }
+      catch(e){ console.error(e); alert('Could not save — check your connection.'); return; }
+      editingTopic = null; render();
+    });
+  });
+  document.querySelectorAll('[data-delete-topic]').forEach(el=>{
+    el.addEventListener('click', async ()=>{
+      const id = el.getAttribute('data-delete-topic');
+      const t = topics.find(x=>x.id===id);
+      if(!t) return;
+      if(!ownerCheck(t.contact_email)){ alert("That email doesn't match what this was posted with."); return; }
+      if(!confirm('Delete this discussion permanently? This cannot be undone.')) return;
+      try{ await deleteTopic(id); }catch(e){ console.error(e); alert('Could not delete — check your connection.'); return; }
+      currentTopicId = null; currentTab = 'home'; render();
+    });
+  });
+
+  document.querySelectorAll('[data-edit-reply]').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      const idx = parseInt(el.getAttribute('data-edit-reply'),10);
+      const tid = el.getAttribute('data-id');
+      const t = topics.find(x=>x.id===tid);
+      if(!t || !t.replies[idx]) return;
+      if(!ownerCheck(t.replies[idx].contactEmail)){ alert("That email doesn't match what this was posted with."); return; }
+      editingReply = {topicId: tid, index: idx}; render();
+    });
+  });
+  document.querySelectorAll('[data-cancel-reply-edit]').forEach(el=>{
+    el.addEventListener('click', ()=>{ editingReply = null; render(); });
+  });
+  document.querySelectorAll('[data-save-reply-edit]').forEach(el=>{
+    el.addEventListener('click', async ()=>{
+      const idx = parseInt(el.getAttribute('data-save-reply-edit'),10);
+      const tid = el.getAttribute('data-id');
+      const t = topics.find(x=>x.id===tid);
+      const newBody = document.getElementById('editReplyBody-'+idx).value.trim();
+      if(!newBody){ alert("Reply can't be empty."); return; }
+      t.replies[idx].body = newBody;
+      try{ await updateTopic(tid, {replies: t.replies}); }
+      catch(e){ console.error(e); alert('Could not save — check your connection.'); return; }
+      editingReply = null; render();
+    });
+  });
+  document.querySelectorAll('[data-delete-reply]').forEach(el=>{
+    el.addEventListener('click', async ()=>{
+      const idx = parseInt(el.getAttribute('data-delete-reply'),10);
+      const tid = el.getAttribute('data-id');
+      const t = topics.find(x=>x.id===tid);
+      if(!t || !t.replies[idx]) return;
+      if(!ownerCheck(t.replies[idx].contactEmail)){ alert("That email doesn't match what this was posted with."); return; }
+      if(!confirm('Delete this reply permanently? This cannot be undone.')) return;
+      t.replies.splice(idx,1);
+      try{ await updateTopic(tid, {replies: t.replies}); }
+      catch(e){ console.error(e); alert('Could not delete — check your connection.'); return; }
+      render();
+    });
+  });
+
+  document.querySelectorAll('[data-mod-block-email]').forEach(el=>{
+    el.addEventListener('click', async ()=>{
+      const email = el.getAttribute('data-mod-block-email');
+      if(!confirm(`Block ${email} from posting further topics or replies?`)) return;
+      try{ await blockEmail(email, 'blocked from flagged content review'); }
+      catch(e){ console.error(e); alert('Could not block — check your connection.'); return; }
+      render();
+    });
+  });
+  const manualBlockBtn = document.getElementById('manualBlockBtn');
+  if(manualBlockBtn) manualBlockBtn.addEventListener('click', async ()=>{
+    const email = document.getElementById('manualBlockEmail').value.trim();
+    if(!isValidEmail(email)){ alert('Enter a valid email to block.'); return; }
+    try{ await blockEmail(email, 'manually blocked'); }
+    catch(e){ console.error(e); alert('Could not block — check your connection.'); return; }
+    render();
+  });
+  document.querySelectorAll('[data-mod-unblock-email]').forEach(el=>{
+    el.addEventListener('click', async ()=>{
+      const email = el.getAttribute('data-mod-unblock-email');
+      try{ await unblockEmail(email); }
+      catch(e){ console.error(e); alert('Could not unblock — check your connection.'); return; }
+      render();
+    });
+  });
+}
+
+/* =====================================================================
+   TABS + ROLE
+===================================================================== */
+document.querySelectorAll('nav.tabs button').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    const tab = btn.getAttribute('data-tab');
+    if(tab === 'moderate' && !isModerator){
+      const pass = prompt('Moderator passphrase:');
+      if(pass !== CONFIG.moderatorPassphrase){ alert('That passphrase doesn\'t match.'); return; }
+      isModerator = true;
+    }
+    document.querySelectorAll('nav.tabs button').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    currentTab = tab;
+    currentTopicId = null;
+    render();
+  });
+});
+
+function updateViewerLabel(){
+  document.getElementById('viewerLabel').textContent = 'Viewing as ' + (ROLE_LABELS[viewerRole] || 'Resident');
+}
+function updateModerateTabVisibility(){
+  const btn = document.getElementById('moderateTabBtn');
+  if(btn) btn.style.display = viewerRole === 'staff' ? '' : 'none';
+}
+function goToAbout(){
+  currentTopicId = null;
+  currentTab = 'about';
+  document.querySelectorAll('nav.tabs button').forEach(b=>b.classList.remove('active'));
+  render();
+}
+function chooseRole(role){
+  viewerRole = role;
+  localStorage.setItem('tc-role', viewerRole);
+  updateViewerLabel();
+  updateModerateTabVisibility();
+  currentTab = 'home';
+  document.querySelectorAll('nav.tabs button').forEach(b=>b.classList.remove('active'));
+  const homeBtn = document.querySelector('nav.tabs button[data-tab="home"]');
+  if(homeBtn) homeBtn.classList.add('active');
+  render();
+}
+document.getElementById('changeRoleBtn').addEventListener('click', goToAbout);
+document.getElementById('townTitle').addEventListener('click', goToAbout);
+document.getElementById('aboutLink').addEventListener('click', goToAbout);
+
+/* =====================================================================
+   INIT
+===================================================================== */
+function goHomeWithSearch(){
+  currentTopicId = null;
+  currentTab = 'home';
+  document.querySelectorAll('nav.tabs button').forEach(b=>b.classList.remove('active'));
+  const homeBtn = document.querySelector('nav.tabs button[data-tab="home"]');
+  if(homeBtn) homeBtn.classList.add('active');
+  render();
+}
+document.getElementById('searchInput').addEventListener('input', (e)=>{
+  currentSearch = e.target.value;
+  goHomeWithSearch();
+});
+document.getElementById('searchBtn').addEventListener('click', ()=>{
+  goHomeWithSearch();
+});
+
+(async function init(){
+  const isFirstVisit = !viewerRole;
+  if(!viewerRole) viewerRole = 'resident';
+  updateViewerLabel();
+  updateModerateTabVisibility();
+  await loadTopics();
+  await loadBlockedEmails();
+  await loadViolations();
+  if(isFirstVisit){
+    currentTab = 'about';
+    document.querySelectorAll('nav.tabs button').forEach(b=>b.classList.remove('active'));
+  }
+  render();
+})();
+</script>
+</body>
+</html>
