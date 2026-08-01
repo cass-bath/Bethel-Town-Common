@@ -1859,6 +1859,7 @@ function renderNewTopicForm(){
         <input type="text" id="newPassphrase" placeholder="Ask the town office if you don't have this">
       </div>
       ` : ''}
+      ${!isPetition ? `
       <div class="field">
         <label>In which town do you live?</label>
         <select id="newResidency">
@@ -1878,6 +1879,7 @@ function renderNewTopicForm(){
         <label>What's the purpose of your post?</label>
         <input type="text" id="newPostPurpose" placeholder="A short line on why you're posting here">
       </div>
+      ` : `<p style="font-size:12px;color:var(--ink-soft);margin:0 0 10px;">Petitions can only be started by Bethel residents, since anything filed with the Town Clerk has to come from someone in town.</p>`}
       <div class="field">
         <label>How long should this stay ${isPoll ? 'open for voting' : 'open'}?</label>
         <div class="radio-row">
@@ -2414,14 +2416,16 @@ function attachHandlers(){
     }
     const wantsCopy = document.getElementById('newDownloadCopy').checked;
     const createdAt = new Date().toISOString();
-    let residency = document.getElementById('newResidency').value;
-    if(residency === '__other__'){
-      residency = document.getElementById('newResidencyOther').value.trim() || 'Other';
-    }
-    let bethelConnection = null, postPurpose = null;
-    if(residency !== 'Bethel'){
-      bethelConnection = document.getElementById('newBethelConnection').value;
-      postPurpose = document.getElementById('newPostPurpose').value.trim() || null;
+    let residency = 'Bethel', bethelConnection = null, postPurpose = null;
+    if(!isPetitionSubmit){
+      residency = document.getElementById('newResidency').value;
+      if(residency === '__other__'){
+        residency = document.getElementById('newResidencyOther').value.trim() || 'Other';
+      }
+      if(residency !== 'Bethel'){
+        bethelConnection = document.getElementById('newBethelConnection').value;
+        postPurpose = document.getElementById('newPostPurpose').value.trim() || null;
+      }
     }
     let petitionType = null, petitionMeetingDate = null, petitionRequestBallot = false;
     if(isPetitionSubmit){
