@@ -394,9 +394,9 @@
     </div>
   </div>
   <nav class="tabs" id="navTabs">
-    <button data-tab="home" class="active">Discussions</button>
-    <button data-tab="digest">Board Digest</button>
     <button data-tab="about">About</button>
+    <button data-tab="home" class="active">Discussions</button>
+    <button data-tab="digest">Discussion Summary</button>
   </nav>
 </header>
 
@@ -412,7 +412,7 @@
     </div>
   </div>
 </div>
-<div class="print-disclaimer">Reactions, poll results, petition signatures, and reply/support counts shown here reflect informal, non-binding community engagement on Bethel Town Common — an independent, resident-run site. They are not an official vote, survey, or ballot, and carry no binding authority over any town, Selectboard, or School Board decision.</div>
+<div class="print-disclaimer">Reactions, poll results, petition signatures, and reply/support counts shown here reflect informal, non-binding community engagement on Bethel Town Common, an official discussion platform of the Town of Bethel. They are not an official vote, survey, or ballot, and carry no binding authority over any town, Selectboard, or School Board decision.</div>
 
 <script>
 /* =====================================================================
@@ -1359,8 +1359,8 @@ const ABOUT_SLIDES = [
   },
   {
     icon: `<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M32 8 L54 16 V30 C54 44 44 54 32 58 C20 54 10 44 10 30 V16 Z" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/><line x1="32" y1="24" x2="32" y2="36" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><circle cx="32" cy="44" r="1.8" fill="currentColor"/></svg>`,
-    title: 'Not an official town channel',
-    body: "It isn't run by Town Management or the Select Board, and nothing posted here is automatically read, tracked, or acted on by anyone at the town. What it is: a place to see what your neighbors are actually talking about, gauge what's got real momentum, and build something together. If a topic here matters to you, it's on you to carry it further — print a thread, note a poll result, point to how many people weighed in — and bring it to a posted Select Board meeting yourself, if that's where it belongs."
+    title: 'Run and moderated by the Town of Bethel',
+    body: "Bethel Town Common is an official channel of the Town of Bethel, run and moderated by Town Management. Posts, polls, and petitions here are read as real input — the Select Board and Town Management are looking for exactly this kind of feedback between meetings, not just during them. The same standards expected of anyone speaking at a Town Meeting or Select Board meeting apply here too: stay on topic, keep it civil, and address the issue, not the person."
   },
   {
     icon: `<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="20" cy="24" r="7" stroke="currentColor" stroke-width="3"/><circle cx="44" cy="24" r="7" stroke="currentColor" stroke-width="3"/><path d="M8 50c0-8 5.4-14 12-14s12 6 12 14" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><path d="M32 50c0-8 5.4-14 12-14s12 6 12 14" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>`,
@@ -1444,7 +1444,7 @@ function renderHome(){
   }).join('');
 
   return `
-    <p style="font-size:13px;color:var(--ink-soft);margin:0 0 14px;">A reminder: this is an independent, resident-run site, not affiliated with the Town of Bethel — nothing posted here reaches Town Management or the Select Board automatically. If you want to make sure your voice actually gets there, here's how: email <a href="https://townofbethelvt.com/town-manager" target="_blank" rel="noopener">Town Management</a> or a <a href="https://townofbethelvt.com/selectboard" target="_blank" rel="noopener">Select Board member</a> directly, stop by the <a href="https://www.townofbethelvt.com" target="_blank" rel="noopener">Town Office</a> in person, or attend a Select Board meeting — held every 2nd and 4th Monday at 6 PM at <a href="https://www.google.com/maps/dir/?api=1&destination=318+Main+St%2C+Bethel%2C+VT+05032" target="_blank" rel="noopener">Bethel Town Hall (get directions)</a>. There's plenty of on-site parking, with an accessible entrance in the rear, and time set aside for public comment.</p>
+    <p style="font-size:13px;color:var(--ink-soft);margin:0 0 14px;">This is an official discussion platform of the Town of Bethel, run and moderated by Town Management — the Select Board and Town Management do read what's posted here, as one of the ways we listen for what residents care about between meetings. That said, posting here doesn't replace the formal record. The same standards of respectful engagement expected at a Town Meeting or Select Board meeting apply here too, and for anything that needs a decision, you can also reach us directly: email <a href="https://townofbethelvt.com/town-manager" target="_blank" rel="noopener">Town Management</a> or a <a href="https://townofbethelvt.com/selectboard" target="_blank" rel="noopener">Select Board member</a>, stop by the <a href="https://www.townofbethelvt.com" target="_blank" rel="noopener">Town Office</a> in person, or attend a Select Board meeting — held every 2nd and 4th Monday at 6 PM at <a href="https://www.google.com/maps/dir/?api=1&destination=318+Main+St%2C+Bethel%2C+VT+05032" target="_blank" rel="noopener">Bethel Town Hall (get directions)</a>. There's plenty of on-site parking, with an accessible entrance in the rear, and time set aside for public comment.</p>
     ${renderAgreements(false)}
     <div class="toolbar">
       <div class="sort-group" style="align-items:center;">
@@ -2871,6 +2871,9 @@ document.getElementById('searchBtn').addEventListener('click', ()=>{
   await loadBlockedEmails();
   await loadViolations();
   await loadPetitionSigners();
+  currentTab = 'about';
+  aboutSlideIndex = 0;
+  document.querySelectorAll('nav.tabs button').forEach(b=>b.classList.remove('active'));
   render();
 })();
 </script>
