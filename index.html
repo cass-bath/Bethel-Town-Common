@@ -389,7 +389,7 @@
       <div class="tag">Public discussion &amp; feedback board</div>
     </div>
     <div class="viewer-pill">
-      <span id="viewerLabel">Viewing as Resident</span>
+      <span id="viewerLabel">Viewing as Community Member</span>
       <button id="changeRoleBtn">change</button>
     </div>
   </div>
@@ -897,7 +897,7 @@ function saveVotedPolls(){ localStorage.setItem('tc-voted-polls', JSON.stringify
 let blockedEmails = new Set();
 let violations = {}; // email -> { count, history: [ {contextTitle, content, authorName, violationType, actionBasis, comments, action, violationNumber, timestamp} ] }
 
-const ROLE_LABELS = { resident:'Resident', staff:'Town Staff', board:'Select Board Member' };
+const ROLE_LABELS = { resident:'Community Member', staff:'Town Staff', board:'Select Board Member' };
 
 function saveReacted(){ localStorage.setItem('tc-reacted', JSON.stringify(reactedMap)); }
 function saveFlagged(){ localStorage.setItem('tc-flagged', JSON.stringify(flaggedMap)); }
@@ -1523,6 +1523,9 @@ function renderPetitionWidget(t, closed){
     <div style="margin-top:14px;">
       <div class="agreements-panel compact">
         <strong>Reminder:</strong> signing here shows real support, but is not a legally valid petition signature under Vermont law (17 V.S.A. § 2642), which requires an original handwritten signature on paper. The organizer will need to collect actual signatures separately for anything filed with the Town Clerk.
+      </div>
+      <div class="agreements-panel compact" style="margin-top:8px;">
+        <strong>Not registered to vote?</strong> If you're a Bethel resident interested in signing a petition here but aren't registered, you can do so at the <a href="https://vote.vermont.gov/public/dashboard" target="_blank" rel="noopener">Vermont Secretary of State's voter dashboard</a>.
       </div>
       <div style="font-size:13px;margin:10px 0;"><strong>${signers.length}</strong> signature${signers.length===1?'':'s'} · <strong>${confirmedCount}</strong> self-identified as registered Bethel voters</div>
       <div style="max-height:220px;overflow-y:auto;border:1px solid var(--line);border-radius:var(--radius);padding:8px 10px;background:var(--card);">${signerRows}</div>
