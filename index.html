@@ -280,7 +280,7 @@
   .dot{width:8px;height:8px;border-radius:50%;display:inline-block;}
 
   @media (max-width: 520px){
-    .masthead h1{font-size:24px;}
+    .masthead h1{font-size:30px;}
     .card-meta{flex-direction:column;align-items:flex-start;}
     .toolbar{flex-direction:column;align-items:stretch;gap:10px;}
     .toolbar > div{width:100%;}
@@ -290,16 +290,52 @@
     .sort-group label{width:100%;}
   }
 
+  /* ============ ABOUT PAGE CAROUSEL ============ */
+  .about-carousel{ display:flex; align-items:center; gap:10px; }
+  .about-nav-arrow{
+    background:var(--card); border:1px solid var(--line); border-radius:50%;
+    width:38px; height:38px; flex-shrink:0; font-size:20px; line-height:1;
+    color:var(--pine); display:flex; align-items:center; justify-content:center;
+  }
+  .about-nav-arrow:hover{ border-color:var(--pine-light); background:var(--gold-soft); }
+  .about-slide{
+    flex:1; background:var(--card); border:1px solid var(--line); border-radius:var(--radius);
+    padding:34px 26px; text-align:center; min-height:280px;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    cursor:pointer; animation:aboutFadeIn .35s ease;
+  }
+  .about-slide:hover{ border-color:var(--pine-light); }
+  @keyframes aboutFadeIn{ from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:translateY(0);} }
+  .about-slide-icon{ width:60px; height:60px; color:var(--pine); margin-bottom:14px; }
+  .about-slide-icon svg{ width:100%; height:100%; }
+  .about-slide-count{
+    font-size:11px; letter-spacing:.08em; text-transform:uppercase;
+    color:var(--gold-deep); font-weight:700; margin-bottom:8px;
+  }
+  .about-slide-title{ font-size:22px; margin-bottom:12px; }
+  .about-slide-body{ font-size:14.5px; color:var(--ink); line-height:1.6; max-width:520px; }
+  .about-dots{ display:flex; justify-content:center; gap:8px; margin-top:16px; }
+  .about-dot{ width:9px; height:9px; border-radius:50%; background:var(--line); border:none; padding:0; }
+  .about-dot.active{ background:var(--pine); width:22px; border-radius:5px; }
+  @media (max-width:520px){
+    .about-slide{ padding:24px 14px; min-height:260px; }
+    .about-slide-icon{ width:48px; height:48px; }
+    .about-slide-title{ font-size:19px; }
+    .about-nav-arrow{ width:32px; height:32px; font-size:17px; }
+  }
+
   /* ============ PRINT ============ */
   .print-btn{
     background:var(--card);border:1px solid var(--line);border-radius:2px;
     padding:6px 12px;font-size:12.5px;color:var(--ink-soft);font-weight:600;
   }
   .print-btn:hover{border-color:var(--pine-light);color:var(--pine);}
+  .print-disclaimer{ display:none; }
+  .print-page-heading{ display:none; }
 
   @media print{
     .masthead, nav.tabs, .toolbar, .back-link, .print-btn, .report-btn,
-    .reply-form, .agreements-panel, .form-panel .field:has(#newPassphrase),
+    .reply-form, .agreements-panel,
     .radio-row, .empty, .poll-vote-form, .vote-btn{ display:none !important; }
     body{ background:#fff; color:#000; font-size:12px; }
     .shell{ max-width:100%; padding:0; }
@@ -312,6 +348,24 @@
       print-color-adjust: exact !important;
       color-adjust: exact !important;
     }
+    .print-disclaimer{
+      display:block !important;
+      position:fixed; bottom:0; left:0; right:0;
+      font-size:9.5px; font-style:italic; color:#555;
+      border-top:1px solid #999; padding:6px 0 0;
+      background:#fff;
+    }
+    .print-page-heading{
+      display:block !important;
+      text-align:center;
+      font-family:'Open Sans', Georgia, serif;
+      font-size:22px;
+      color:#22301B;
+      margin:0 0 14px;
+      padding-bottom:10px;
+      border-bottom:1.5px solid #CBA135;
+    }
+    .print-page-heading.hide-for-petition{ display:none !important; }
   }
 </style>
 </head>
@@ -321,16 +375,18 @@
   <div class="masthead-watermark script" id="watermarkText">Bethel Town Common</div>
   <div class="utility-bar">
     <div class="tag">Bethel, Vermont</div>
-    <div class="search-box">
-      <input type="text" id="searchInput" placeholder="Search discussions...">
-      <button id="searchBtn" aria-label="Search">🔎</button>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <div class="search-box">
+        <input type="text" id="searchInput" placeholder="Search discussions...">
+        <button id="searchBtn" aria-label="Search">🔎</button>
+      </div>
+      <button id="moderateTabBtn" title="Moderator access" style="background:none;border:1px solid rgba(255,255,255,.28);color:var(--paper);opacity:.6;font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;padding:5px 9px;border-radius:2px;white-space:nowrap;">Moderate</button>
     </div>
   </div>
   <div class="masthead-inner">
     <div>
       <h1 id="townTitle" class="script" style="cursor:pointer;" title="About Bethel Town Common">Bethel Town Common</h1>
-      <div class="tag">Public discussion and community input forum</div>
-      <button id="aboutLink" style="background:none;border:none;color:var(--gold-soft);font-size:11px;text-decoration:underline;padding:0;margin-top:4px;cursor:pointer;">About this page</button>
+      <div class="tag">Public discussion &amp; feedback board</div>
     </div>
     <div class="viewer-pill">
       <span id="viewerLabel">Viewing as Resident</span>
@@ -339,12 +395,24 @@
   </div>
   <nav class="tabs" id="navTabs">
     <button data-tab="home" class="active">Discussions</button>
-    <button data-tab="digest">Discussion Summary</button>
-    <button data-tab="moderate" id="moderateTabBtn">Moderate</button>
+    <button data-tab="digest">Board Digest</button>
+    <button data-tab="about">About</button>
   </nav>
 </header>
 
+<div class="print-page-heading" id="printPageHeading">Bethel Town Common</div>
 <main class="shell" id="app"></main>
+<div id="profanityModalOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:1000;align-items:center;justify-content:center;">
+  <div style="background:#fff;max-width:420px;width:90%;margin:auto;border-radius:var(--radius, 8px);padding:20px;font-family:inherit;">
+    <p style="margin:0 0 10px;font-size:14px;">This looks like it might include language our filter flags.</p>
+    <p style="margin:0 0 14px;font-size:13px;"><button type="button" id="profanityModalAgreementsLink" style="background:none;border:none;padding:0;color:var(--pine, #2c5f4f);text-decoration:underline;cursor:pointer;font-size:13px;">Review the community agreements</button> to double-check your post before submitting.</p>
+    <div style="display:flex;gap:8px;justify-content:flex-end;">
+      <button type="button" class="report-btn" id="profanityModalCancel">Cancel</button>
+      <button type="button" class="btn-primary" id="profanityModalProceed">Post anyway</button>
+    </div>
+  </div>
+</div>
+<div class="print-disclaimer">Reactions, poll results, petition signatures, and reply/support counts shown here reflect informal, non-binding community engagement on Bethel Town Common — an independent, resident-run site. They are not an official vote, survey, or ballot, and carry no binding authority over any town, Selectboard, or School Board decision.</div>
 
 <script>
 /* =====================================================================
@@ -352,13 +420,15 @@
 ===================================================================== */
 const CONFIG = {
   townName: "Bethel Town Common",              // shown in the masthead
+  legalTownName: "Bethel",                     // used in petition legal language ("Town of ___")
   categories: ["Budget & Taxes","Roads & Plowing","Recreation","Land Use","Public Safety","Events","Board Process & Transparency","General"],
   officialPassphrase: "select2026",      // simple friction so not anyone can post as "Town Management" — NOT real security
   moderatorPassphrase: "moderate2026",   // separate passphrase to open the Moderate tab — change this before publishing
   flagThreshold: 3,                      // number of reports before a post/reply auto-hides pending review
   autoCloseMonths: 12,                   // discussions auto-close after this many months of no new replies
   maxPollOptions: 6,                     // max options a poll can have
-  neighboringTowns: ["Royalton","Stockbridge","Rochester","Randolph","Pittsfield","Barnard"], // nearby towns
+  neighboringTowns: ["Royalton/SoRo","Stockbridge","Rochester","Randolph","Pittsfield","Barnard"], // nearby towns
+  bethelConnections: ["Former resident","Friendly neighbor with an opinion","Has family in Bethel","Promoting a neighboring-town event","Other"], // shown to non-Bethel posters
   profanityWords: ["fuck","shit","bitch","asshole","bastard","dumbass","cunt","douchebag","slut","whore"], // soft warning list — edit freely, this is not exhaustive
   rulesUrl: "https://townofbethelvt.com/vertical/sites/%7B46C5C479-45BC-4485-9BD0-06530D0ACFB2%7D/uploads/Bethel_Selectboard_Rules_of_Procedure.docx",
   sectionFPdf: "data:application/pdf;base64,JVBERi0xLjQKJZOMi54gUmVwb3J0TGFiIEdlbmVyYXRlZCBQREYgZG9jdW1lbnQgKG9wZW5zb3VyY2UpCjEgMCBvYmoKPDwKL0YxIDIgMCBSIC9GMiAzIDAgUiAvRjMgNCAwIFIKPj4KZW5kb2JqCjIgMCBvYmoKPDwKL0Jhc2VGb250IC9IZWx2ZXRpY2EgL0VuY29kaW5nIC9XaW5BbnNpRW5jb2RpbmcgL05hbWUgL0YxIC9TdWJ0eXBlIC9UeXBlMSAvVHlwZSAvRm9udAo+PgplbmRvYmoKMyAwIG9iago8PAovQmFzZUZvbnQgL0hlbHZldGljYS1Cb2xkIC9FbmNvZGluZyAvV2luQW5zaUVuY29kaW5nIC9OYW1lIC9GMiAvU3VidHlwZSAvVHlwZTEgL1R5cGUgL0ZvbnQKPj4KZW5kb2JqCjQgMCBvYmoKPDwKL0Jhc2VGb250IC9IZWx2ZXRpY2EtT2JsaXF1ZSAvRW5jb2RpbmcgL1dpbkFuc2lFbmNvZGluZyAvTmFtZSAvRjMgL1N1YnR5cGUgL1R5cGUxIC9UeXBlIC9Gb250Cj4+CmVuZG9iago1IDAgb2JqCjw8Ci9Db250ZW50cyA5IDAgUiAvTWVkaWFCb3ggWyAwIDAgNjEyIDc5MiBdIC9QYXJlbnQgOCAwIFIgL1Jlc291cmNlcyA8PAovRm9udCAxIDAgUiAvUHJvY1NldCBbIC9QREYgL1RleHQgL0ltYWdlQiAvSW1hZ2VDIC9JbWFnZUkgXQo+PiAvUm90YXRlIDAgL1RyYW5zIDw8Cgo+PiAKICAvVHlwZSAvUGFnZQo+PgplbmRvYmoKNiAwIG9iago8PAovUGFnZU1vZGUgL1VzZU5vbmUgL1BhZ2VzIDggMCBSIC9UeXBlIC9DYXRhbG9nCj4+CmVuZG9iago3IDAgb2JqCjw8Ci9BdXRob3IgKFwoYW5vbnltb3VzXCkpIC9DcmVhdGlvbkRhdGUgKEQ6MjAyNjA3MjgxODM1NDArMDAnMDAnKSAvQ3JlYXRvciAoXCh1bnNwZWNpZmllZFwpKSAvS2V5d29yZHMgKCkgL01vZERhdGUgKEQ6MjAyNjA3MjgxODM1NDArMDAnMDAnKSAvUHJvZHVjZXIgKFJlcG9ydExhYiBQREYgTGlicmFyeSAtIFwob3BlbnNvdXJjZVwpKSAKICAvU3ViamVjdCAoXCh1bnNwZWNpZmllZFwpKSAvVGl0bGUgKFwoYW5vbnltb3VzXCkpIC9UcmFwcGVkIC9GYWxzZQo+PgplbmRvYmoKOCAwIG9iago8PAovQ291bnQgMSAvS2lkcyBbIDUgMCBSIF0gL1R5cGUgL1BhZ2VzCj4+CmVuZG9iago5IDAgb2JqCjw8Ci9GaWx0ZXIgWyAvQVNDSUk4NURlY29kZSAvRmxhdGVEZWNvZGUgXSAvTGVuZ3RoIDE4ODAKPj4Kc3RyZWFtCkdhdTBDPyRHOWQmOk1tLlFxK1Q/O0pbSjtoNT4pX2ooLUpiVWcpUU5dRWhfbCZtOTZkKWpbKXBwdGgtRSInSDg3P15uQT1BOiQuU2tLWSlCNnBwbEByXE1aUD9JLmw2RzdkN3VjJ0stKCNAajNQVXBvcyVocDglZGpFKkFLaUZAaG0sZkJLKllJaT0mP0ImLShHVj1dR1IlZVoxJ0cma2xuJE9edTtVWzlzYkc4QkZpRFRNVUJqJE8nZFooU2k5SWhKdGQvOHBkNU9iZz9qNnNoMGtIZTx0bz9pPD9AKT8tUml1YlByTG5aJnIvODZlcTA/Lio4TjtQbkZMWEYoZCJIVFBWcDAvX0g/SUVbMTpaNTtPLlZuOCg5PWgpPD1zXDg4PmNBQCQkYm9IblovMixHTCQxOyJHcHVcZyxbQFhQLi1gJiJHaGg5VixdOjc6Nyk+TC8yTignPT5fYHU/cVtVXz4qTE9sJlkhXChZKm1KbTJdKHUkbGE2UDdlXGJuTSdeOk0laFM2cGRBZ3U2KCczZjJhLSl1dU1ZITYtVUA5bks+XCVENk9ST0RxTkI6Xk5JXVhYVEk+PCtiNlVNS0k9YVZFNURjbVZhTjZEcl91JDRySVFfY2RrX2txQldEJEZOKmMqJ2wwTGMnNCxUIzhNJDRaVjkiNE9VOUkqPFptOy4oZXMyTHRqYzJyK25sdE5tIURCc1lhQzdHRUBCNVBIOzNualxKZ0hbUyM5L1MsbFlgPSVnWzppPT1jbjQ8bSxVXFBHWlU6R3M3KSs/JmhHN1VoP24wO09yUC1dbjhvOWlqN0BiaktYYSlNQUs/UzMuOl8haFRJOXQnSDw+QTcpMT9ySlxhZSYrKCNDdU1WQ0dILS9cOEZsNUE8Ryo+JUE4OEFeWmZxVkklLi5dZVFXRWA/YlMpN2Y6WmZtU2RbUlZaaWAraW0nVTFmI0YkKHFmQ3Q3XSxCS1hmU0Q5aFZkJyFGJik6cC8oQyNeZm4jRSwlNiota1IiaTY+Jm5Gb1A/RUhGcT9vV0JdS19wZDpyMCdbOU8zOThmLFIsSCRZYWpjOzI7Zy9zQyNbQGRoIVdNR3ErRkhtcCokSkJMUlBNaXRTR0AnLig8Wi9PaUhKUlkjZT5lNWFJYCs2Q1RASXE2YyguKkxQPUNeaEdlPms9cFozLTRrXlE9Nl1GOWhmbSVbREF0RDxYRUA0QVZlWS5bQVxNbl00QVwtUzNGY0ZJL0sjdXFzMCNdc2RoXEYkJ0Y5a1VwVDhJKCopOGwtMV91a05XKixFaWEjL3BVZU9rWTNvKjhPKy01PDVialBNVyJPVFZsOF4nOE1zRzleS3AjNT9PKExPSl1JJC5UN2ZrUUFgRCtqYy0oNEVaUVRxPylgZj9Ubz4iIlpSUDc9IT8rWlNhbWguZTNxITQ4TWpJV3BCOFlWUFEwaS8lL2RnaSRGYHIkWjdyVSRIWFJvZyFsRz0mRTJrXEpwMGBWR0llRGRmOUkpR1g6aGA9JytJYjZjSj41MDosI0VbNTJIK2QvJUIsP3VlPyo/LWdOWzZGdEJtLCwqJSZfISZdKCJldGdjTXMhKy9wYTRhdDd1cSMoZ1tDOGchUXJAPSwqQWdTPkAtNUhhXnEvb0pVSEdIRFdlUj91MzIrOzEuUTBGSFZgUS9PZnAiLjFYXGkqbi1wbWhUMS5jN1hmWmM9T2xLR0k+JDAsTmsnTE9DXDMzUS9FNXNObTgvQ08vdGRkMnRaZzM8XSM2MFppamY0LkdzKiJSZmYrZyVpOSJjQyRtam1LYStlZj4tNzJDajJuQU5JKltELFAsNjNKOCpVMS9NTEFFMHBgbW9rIk9CTTZHVWdLYnA6X3FkP0BXUzhncT0+cicpWSUyUTJZVS08aD4jaHBdOmZLS0wzYD8xW0cvMDsnVydxVzs6Mm49alJkISlvQkhtMyUpTWJvXT1PLk5pL2VlaXJjLT06PzsuL1FVZEIwNk0qWmloZGdDMUM3WzA7QGgjOmJtZWJtQ1wmYFYlX2subFIxUGssOitPXCptR2sucE9wTVUrP0Y5X182LUNSUzJFIXUwdT5mX3RlTFZtJVo7MEBVKnM2b2JWXHJXcldTWlNEQjhuJFBlS0tsV2ksbStsKyR1Qz1ibUwmNTZlYlNaYzh0WGVRXVhGSXBLcmhLb0E5UiI2ZFBGa2tLKC5Yak1WQXNFO0pgcXJkdCghSzhOVGE0M3A3VnBKNU9xRVA5W1suX2tgb2xIWk4zc2BEVj5OV0xldUUkZ2dXSCw3KVQ6W0omOSlmKz1HY1VIOHNMQDQyV0tYcUxuJVhTSV9LWVVObyZVQFlBUTtVJCVRXCVTaU1LMExIMmdGMThSPTAvcDhrYCpDMlBocjslJWM+WnQwRiMxblBnMVBvXFFBRChMYSVCRE89bi5uTCYmRjFvR2FTbGIxZF9caHRrOFwuLiZla1RqMVZwTjxcbjRERTUxMV9rR1RdNEE1Z0lyPDV0OGsiUH4+ZW5kc3RyZWFtCmVuZG9iagp4cmVmCjAgMTAKMDAwMDAwMDAwMCA2NTUzNSBmIAowMDAwMDAwMDYxIDAwMDAwIG4gCjAwMDAwMDAxMTIgMDAwMDAgbiAKMDAwMDAwMDIxOSAwMDAwMCBuIAowMDAwMDAwMzMxIDAwMDAwIG4gCjAwMDAwMDA0NDYgMDAwMDAgbiAKMDAwMDAwMDYzOSAwMDAwMCBuIAowMDAwMDAwNzA3IDAwMDAwIG4gCjAwMDAwMDA5ODcgMDAwMDAgbiAKMDAwMDAwMTA0NiAwMDAwMCBuIAp0cmFpbGVyCjw8Ci9JRCAKWzxiMjI0ZjY3NGZhOTRiOTM3OTQ1Nzg5NGUzYzVhMWFlYT48YjIyNGY2NzRmYTk0YjkzNzk0NTc4OTRlM2M1YTFhZWE+XQolIFJlcG9ydExhYiBnZW5lcmF0ZWQgUERGIGRvY3VtZW50IC0tIGRpZ2VzdCAob3BlbnNvdXJjZSkKCi9JbmZvIDcgMCBSCi9Sb290IDYgMCBSCi9TaXplIDEwCj4+CnN0YXJ0eHJlZgozMDE3CiUlRU9GCg==",
@@ -392,15 +462,33 @@ function openSectionFPdf(){
     window.open(url, '_blank');
   }catch(e){ console.error('could not open Section F PDF', e); alert('Could not open the document — try again.'); }
 }
+// Draws the shared page heading — "Bethel Town Common" centered and colored — at the top of any
+// generated PDF, with a thin divider underneath. Returns the y position to continue drawing from.
+// jsPDF only ships Helvetica/Times/Courier, so this uses Times-Bold as the closest built-in
+// approximation of the site's period display font rather than the exact custom webfont.
+function drawPdfHeading(doc){
+  const pageWidth = doc.internal.pageSize.getWidth();
+  let y = 46;
+  doc.setFont('times','bold'); doc.setFontSize(20);
+  doc.setTextColor(34,48,27); // matches --pine
+  doc.text(CONFIG.townName, pageWidth/2, y, { align:'center' });
+  y += 14;
+  doc.setDrawColor(203,161,53); // matches --gold
+  doc.setLineWidth(1.2);
+  doc.line(pageWidth/2 - 110, y, pageWidth/2 + 110, y);
+  doc.setTextColor(0,0,0);
+  return y + 28;
+}
+
 function downloadPostCopy({ title, category, authorName, authorType, createdAt, body, kind, parentTitle }){
   try{
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF({ unit:'pt', format:'letter' });
-    const marginX = 54; let y = 60;
+    const marginX = 54; let y = drawPdfHeading(doc);
     const pageHeight = doc.internal.pageSize.getHeight();
     const maxWidth = doc.internal.pageSize.getWidth() - marginX*2;
 
-    function ensureRoom(lines){ if(y + lines*14 > pageHeight - 50){ doc.addPage(); y = 60; } }
+    function ensureRoom(lines){ if(y + lines*14 > pageHeight - 50){ doc.addPage(); y = drawPdfHeading(doc); } }
 
     doc.setFont('helvetica','bold'); doc.setFontSize(15);
     const titleLines = doc.splitTextToSize(kind==='reply' ? `Reply on: ${parentTitle}` : title, maxWidth);
@@ -425,8 +513,325 @@ function downloadPostCopy({ title, category, authorName, authorType, createdAt, 
     doc.text(footer, marginX, y);
 
     const slug = (kind==='reply' ? parentTitle : title).toLowerCase().replace(/[^a-z0-9]+/g,'-').slice(0,40).replace(/(^-|-$)/g,'');
-    doc.save(`${kind}-copy-${slug || 'post'}.pdf`);
+    doc.save(`bethel-common-${kind}-copy-${slug || 'post'}.pdf`);
   }catch(e){ console.error('could not generate PDF copy', e); alert('Your post was saved, but the PDF copy could not be generated.'); }
+}
+
+// Archive PDF auto-generated whenever someone deletes their own discussion or reply,
+// so the conversation isn't lost with no record. Downloads automatically — no checkbox,
+// same reasoning as the moderator violation-record PDF: a safety net people forget to
+// opt into isn't much of a safety net.
+function generateDeletedDiscussionPdf(t){
+  try{
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ unit:'pt', format:'letter' });
+    const marginX = 54; let y = drawPdfHeading(doc);
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const maxWidth = doc.internal.pageSize.getWidth() - marginX*2;
+
+    function ensureRoom(lines){ if(y + lines*14 > pageHeight - 50){ doc.addPage(); y = drawPdfHeading(doc); } }
+
+    doc.setFont('helvetica','italic'); doc.setFontSize(9); doc.setTextColor(140,58,42);
+    doc.text('DELETED DISCUSSION — automatic archive copy', marginX, y); y += 18;
+    doc.setTextColor(0,0,0);
+
+    doc.setFont('helvetica','bold'); doc.setFontSize(15);
+    const titleLines = doc.splitTextToSize(t.title, maxWidth);
+    ensureRoom(titleLines.length); doc.text(titleLines, marginX, y); y += titleLines.length*18 + 4;
+
+    doc.setFont('helvetica','italic'); doc.setFontSize(10);
+    const meta = `${t.category} · ${t.author_name}${t.author_type==='staff' ? ' (Town Management)' : ''} · ${new Date(t.created_at).toLocaleString()}`;
+    doc.text(meta, marginX, y); y += 22;
+
+    doc.setFont('helvetica','normal'); doc.setFontSize(11);
+    const bodyLines = doc.splitTextToSize(t.body || '', maxWidth);
+    bodyLines.forEach(line=>{ ensureRoom(1); doc.text(line, marginX, y); y += 15; });
+    y += 10;
+
+    const replies = t.replies || [];
+    if(replies.length){
+      ensureRoom(2); y += 6;
+      doc.setFont('helvetica','bold'); doc.setFontSize(12);
+      doc.text(`Replies (${replies.length})`, marginX, y); y += 18;
+      replies.forEach(r=>{
+        ensureRoom(2);
+        doc.setFont('helvetica','italic'); doc.setFontSize(9.5); doc.setTextColor(90,90,84);
+        const replyMeta = `${r.authorName}${r.authorType==='staff' ? ' (Town Management)' : ''} · ${new Date(r.createdAt).toLocaleString()}`;
+        doc.text(replyMeta, marginX, y); y += 14;
+        doc.setTextColor(0,0,0);
+        doc.setFont('helvetica','normal'); doc.setFontSize(11);
+        const replyLines = doc.splitTextToSize(r.body || '', maxWidth);
+        replyLines.forEach(line=>{ ensureRoom(1); doc.text(line, marginX, y); y += 15; });
+        y += 12;
+      });
+    }
+
+    y += 10; ensureRoom(3);
+    doc.setFont('helvetica','italic'); doc.setFontSize(9); doc.setTextColor(90,90,84);
+    const footer = doc.splitTextToSize('This copy was generated automatically at the moment this discussion was deleted, so the conversation would not be lost with no record. It is not an official town document.', maxWidth);
+    doc.text(footer, marginX, y);
+
+    const slug = t.title.toLowerCase().replace(/[^a-z0-9]+/g,'-').slice(0,40).replace(/(^-|-$)/g,'');
+    doc.save(`bethel-common-deleted-discussion-${slug || 'post'}.pdf`);
+  }catch(e){ console.error('could not generate deletion archive PDF', e); alert('The discussion was deleted, but an archive PDF could not be generated.'); }
+}
+
+// Builds the VT SOS-style heading + intro paragraph for a petition, based on its type.
+// Mirrors the Elections Division's sample advisory/binding petition language.
+function petitionLegalText(topic){
+  const town = CONFIG.legalTownName;
+  const type = topic.petition_type || 'advisory_selectboard';
+  const meetingDate = topic.petition_meeting_date
+    ? new Date(topic.petition_meeting_date).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})
+    : '__________________';
+  let heading, intro, closing = '';
+
+  if(type === 'advisory_school'){
+    heading = `Petition of the Legal Voters of the ${town} School District to the School Board`;
+    intro = `The undersigned registered voters of the ${town} school district hereby petition the School Board to add the following advisory article to the warning for the Annual School District Meeting:`;
+  } else if(type === 'binding_selectboard'){
+    heading = `Petition of the Legal Voters of the Town of ${town} to the Selectboard`;
+    intro = `We the undersigned legal voters of the Town of ${town} hereby petition the Selectboard to add the following article(s) to the warning for the Town Annual Meeting to be held on ${meetingDate}:`;
+  } else if(type === 'binding_school'){
+    heading = `Petition of the Legal Voters of the ${town} School District to the School Board`;
+    intro = `We the undersigned legal voters of the ${town} School District hereby petition the School Board to add the following article(s) to the warning for the School District Annual Meeting to be held on ${meetingDate}:`;
+  } else if(type === 'special_meeting'){
+    heading = `Petition of the Legal Voters of ${town} Requesting a Special Meeting`;
+    intro = `The undersigned registered voters of the Town of ${town} hereby petition the Selectboard to warn a Special Meeting of the town for the purpose of considering the following article(s):`;
+    closing = `Once this petition is found to conform (signatures of at least 5% of the town's registered voters), Vermont law requires the meeting be warned within 60 days of the Town Clerk's receipt of the petition. 17 V.S.A. § 2643(a).`;
+  } else { // advisory_selectboard (default)
+    heading = `Petition of the Legal Voters of ${town} to the Selectboard`;
+    intro = `The undersigned registered voters of the Town of ${town} hereby petition the Selectboard to add the following advisory article to the Town Meeting Warning:`;
+  }
+
+  if(topic.petition_request_ballot){
+    closing = (closing ? closing + '\n\n' : '') + 'The undersigned respectfully request that the article be acted upon by all voters of the town by paper ballot. (The board does not have to follow this request, but if the board places the article on the warning, any seven voters at the meeting may request the use of paper ballot.)';
+  }
+  return { heading, intro, closing };
+}
+
+const PETITION_TYPE_LABELS = {
+  advisory_selectboard: 'Advisory article — to the Selectboard',
+  advisory_school: 'Advisory article — to the School Board',
+  binding_selectboard: 'Binding article — to the Selectboard',
+  binding_school: 'Binding article — to the School Board',
+  special_meeting: 'Request a Special Meeting'
+};
+
+// Generates a personal, timestamped PDF receipt of what someone submitted to a petition —
+// either a signature or a reply — combined with the petition's own details (category, type,
+// meeting/deadline date). This is a personal record only, not a legal document.
+// Generates a PDF record of a moderator's deletion or block action: the content at time of
+// removal, the author/email, the violation type and comments picked in the moderator form, and
+// blank ruled lines for a written explanation or response.
+function generateViolationRecordPdf({ contextTitle, content, authorName, email, violationType, actionBasisLabel, violationNumber, comments, actionLabel }){
+  try{
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ unit:'pt', format:'letter' });
+    const marginX = 54; let y = drawPdfHeading(doc);
+    const maxWidth = doc.internal.pageSize.getWidth() - marginX*2;
+    const pageHeight = doc.internal.pageSize.getHeight();
+
+    doc.setFont('helvetica','bold'); doc.setFontSize(15);
+    const titleLines = doc.splitTextToSize(`Moderator Action: ${actionLabel}`, maxWidth);
+    doc.text(titleLines, marginX, y); y += titleLines.length*18 + 6;
+
+    doc.setFont('helvetica','normal'); doc.setFontSize(10.5);
+    [
+      `Date: ${new Date().toLocaleString()}`,
+      contextTitle ? `Discussion: ${contextTitle}` : null,
+      `Author: ${authorName || '—'}`,
+      `Email on file: ${email || '— none —'}`,
+      violationNumber ? `Violation number for this email: #${violationNumber}` : null,
+      `Violation type: ${violationType}`,
+      actionBasisLabel ? `Basis for action: ${actionBasisLabel}` : null
+    ].filter(Boolean).forEach(line=>{ doc.text(line, marginX, y); y += 15; });
+    y += 8;
+
+    if(content){
+      doc.setFont('helvetica','bold'); doc.setFontSize(11);
+      doc.text('Content at time of action:', marginX, y); y += 16;
+      doc.setFont('helvetica','normal'); doc.setFontSize(10.5);
+      const contentLines = doc.splitTextToSize(content, maxWidth);
+      doc.text(contentLines, marginX, y); y += contentLines.length*13 + 12;
+    }
+
+    if(comments){
+      doc.setFont('helvetica','bold'); doc.setFontSize(11);
+      doc.text('Moderator comments:', marginX, y); y += 16;
+      doc.setFont('helvetica','normal'); doc.setFontSize(10.5);
+      const commentLines = doc.splitTextToSize(comments, maxWidth);
+      doc.text(commentLines, marginX, y); y += commentLines.length*13 + 12;
+    }
+
+    y += 6;
+    doc.setFont('helvetica','bold'); doc.setFontSize(11);
+    doc.text('Space for explanation or response:', marginX, y);
+    for(let i=0;i<6;i++){
+      y += 24;
+      if(y > pageHeight - 60){ doc.addPage(); y = drawPdfHeading(doc); }
+      doc.setDrawColor(200,200,200);
+      doc.line(marginX, y, doc.internal.pageSize.getWidth()-marginX, y);
+    }
+
+    const slug = (contextTitle||'record').toLowerCase().replace(/[^a-z0-9]+/g,'-').slice(0,40).replace(/(^-|-$)/g,'');
+    doc.save(`bethel-common-moderation-${slug || 'record'}.pdf`);
+  }catch(e){ console.error('could not generate violation record PDF', e); alert('Could not generate the record PDF.'); }
+}
+
+// Opens the author's email client with a generic subject/body. A webpage cannot attach files to
+// an email automatically, so the moderator needs to manually attach the PDF that just downloaded.
+function openModeratorMailto(email, contextTitle){
+  if(!email) return;
+  const subject = encodeURIComponent(`Regarding your post on ${CONFIG.townName}`);
+  const body = encodeURIComponent(`Hello,\n\nYour recent post${contextTitle ? ` ("${contextTitle}")` : ''} on ${CONFIG.townName} was removed for not following the community agreements. Please see the attached record for details.\n\n(Attach the PDF that was just downloaded to your device before sending this.)\n\nThank you`);
+  window.location.href = `mailto:${email}?subject=${subject}&body=${body}`;
+}
+
+function generatePetitionReceiptPdf(topic, entry){
+  try{
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ unit:'pt', format:'letter' });
+    const marginX = 54; let y = drawPdfHeading(doc);
+    const maxWidth = doc.internal.pageSize.getWidth() - marginX*2;
+
+    doc.setFont('helvetica','bold'); doc.setFontSize(15);
+    const titleLines = doc.splitTextToSize('Petition Receipt: ' + topic.title, maxWidth);
+    doc.text(titleLines, marginX, y); y += titleLines.length*18 + 6;
+
+    doc.setFont('helvetica','normal'); doc.setFontSize(10.5);
+    const typeLabel = PETITION_TYPE_LABELS[topic.petition_type] || 'Petition';
+    const meetingDate = topic.petition_meeting_date ? new Date(topic.petition_meeting_date).toLocaleDateString() : 'Not specified';
+    [
+      `Petition type: ${typeLabel}`,
+      `Category: ${topic.category}`,
+      `Meeting date / deadline: ${meetingDate}`,
+      `Petition posted: ${new Date(topic.created_at).toLocaleString()}`
+    ].forEach(line=>{ doc.text(line, marginX, y); y += 15; });
+    y += 12;
+
+    doc.setFont('helvetica','bold'); doc.setFontSize(11);
+    doc.text(entry.kind === 'signature' ? 'Your signature record:' : 'Your reply:', marginX, y); y += 18;
+
+    doc.setFont('helvetica','normal'); doc.setFontSize(10.5);
+    if(entry.kind === 'signature'){
+      doc.text(`Printed name: ${entry.name}`, marginX, y); y += 15;
+      doc.text(`Registered voter of ${CONFIG.legalTownName}: ${entry.confirmedVoter ? 'Yes (self-identified)' : 'No / not indicated'}`, marginX, y); y += 15;
+      doc.text(`Signed online: ${new Date(entry.timestamp).toLocaleString()}`, marginX, y); y += 15;
+    } else {
+      doc.text(`Name: ${entry.name}`, marginX, y); y += 15;
+      doc.text(`Posted online: ${new Date(entry.timestamp).toLocaleString()}`, marginX, y); y += 15;
+      y += 6;
+      const bodyLines = doc.splitTextToSize(entry.body, maxWidth);
+      doc.text(bodyLines, marginX, y); y += bodyLines.length*13 + 10;
+    }
+
+    y += 18;
+    doc.setFont('helvetica','italic'); doc.setFontSize(9); doc.setTextColor(90,90,84);
+    const footer = doc.splitTextToSize('This is your personal record of what you submitted online — it is not a legally valid petition signature. When the petition organizer asks for your ink-on-paper signature, verify that the paper copy matches exactly what is recorded here before you sign.', maxWidth);
+    doc.text(footer, marginX, y);
+
+    const slug = topic.title.toLowerCase().replace(/[^a-z0-9]+/g,'-').slice(0,40).replace(/(^-|-$)/g,'');
+    doc.save(`petition-receipt-${entry.kind}-${slug || 'copy'}.pdf`);
+  }catch(e){ console.error('could not generate petition receipt PDF', e); }
+}
+
+function generatePetitionPdf(topic, signers){
+  try{
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ unit:'pt', format:'letter' });
+    const marginX = 46; const pageWidth = doc.internal.pageSize.getWidth(); const pageHeight = doc.internal.pageSize.getHeight();
+    const maxWidth = pageWidth - marginX*2;
+    let y = 50;
+    const legal = petitionLegalText(topic);
+
+    function drawRunningHeader(isFirstPage){
+      y = 50; // no site heading here on purpose — this document is meant to be filed with the
+               // Town Clerk as the actual petition, and shouldn't carry website letterhead/branding
+      doc.setFont('helvetica','bold'); doc.setFontSize(13);
+      const titleLines = doc.splitTextToSize(legal.heading, maxWidth);
+      doc.text(titleLines, marginX, y); y += titleLines.length*15 + 4;
+      if(isFirstPage){
+        doc.setFont('helvetica','normal'); doc.setFontSize(10.5);
+        const introLines = doc.splitTextToSize(legal.intro, maxWidth);
+        doc.text(introLines, marginX, y); y += introLines.length*13 + 8;
+
+        doc.setFont('helvetica','normal'); doc.setFontSize(10.5);
+        const bodyLines = doc.splitTextToSize('1. ' + topic.body, maxWidth);
+        doc.text(bodyLines, marginX, y); y += bodyLines.length*13 + 8;
+
+        if(legal.closing){
+          doc.setFont('helvetica','italic'); doc.setFontSize(9.5);
+          const closingLines = doc.splitTextToSize(legal.closing, maxWidth);
+          doc.text(closingLines, marginX, y); y += closingLines.length*12 + 10;
+        }
+
+        doc.setFillColor(242,243,226); doc.setDrawColor(180,180,150);
+        const filingRule = topic.petition_type === 'special_meeting'
+          ? `and the completed petition — with signatures from at least 5% of ${CONFIG.legalTownName}'s registered voters — may be filed with the Town Clerk at any time (17 V.S.A. § 2643(a)).`
+          : `and the completed petition — with signatures from at least 5% of ${CONFIG.legalTownName}'s registered voters — must be filed with the Town Clerk at least 47 days before Town Meeting Day (17 V.S.A. § 2642(a)(3)(A)).`;
+        const noticeLines = doc.splitTextToSize(
+          `IMPORTANT: This document lists people who indicated support online. It is not a substitute for legally required signatures under 17 V.S.A. § 2642. To file an official petitioned article, each voter listed below must physically sign an original paper copy carrying this same petition language, ${filingRule}`,
+          maxWidth - 16
+        );
+        const noticeHeight = noticeLines.length*11.5 + 12;
+        doc.rect(marginX, y, maxWidth, noticeHeight, 'FD');
+        doc.setFont('helvetica','italic'); doc.setFontSize(8.5); doc.setTextColor(60,60,45);
+        doc.text(noticeLines, marginX+8, y+13);
+        doc.setTextColor(0,0,0);
+        y += noticeHeight + 14;
+      } else {
+        // Vermont law requires the petition language to appear on every page signatures are
+        // collected on (17 V.S.A. § 2642(a)(3)(C)(ii)), so repeat the operative ask here, not just "(continued)".
+        doc.setFont('helvetica','italic'); doc.setFontSize(9);
+        doc.text('(continued)', marginX, y); y += 13;
+        doc.setFont('helvetica','normal'); doc.setFontSize(9.5);
+        const repeatLines = doc.splitTextToSize(legal.intro + '  1. ' + topic.body, maxWidth);
+        doc.text(repeatLines, marginX, y); y += repeatLines.length*12 + 10;
+      }
+      // table header
+      doc.setFont('helvetica','bold'); doc.setFontSize(9.5);
+      doc.text('#', marginX, y);
+      doc.text('Printed Name', marginX+24, y);
+      doc.text('Street Address', marginX+190, y);
+      doc.text('Date', marginX+360, y);
+      doc.text('Signature', marginX+415, y);
+      y += 6;
+      doc.setDrawColor(0,0,0);
+      doc.line(marginX, y, pageWidth-marginX, y);
+      y += 14;
+    }
+
+    drawRunningHeader(true);
+    doc.setFont('helvetica','normal'); doc.setFontSize(9.5);
+    signers.forEach((s,i)=>{
+      if(y > pageHeight - 60){
+        doc.addPage(); y = 50;
+        drawRunningHeader(false);
+        doc.setFont('helvetica','normal'); doc.setFontSize(9.5);
+      }
+      const nameLines = doc.splitTextToSize(s.name, 160);
+      const addrLines = doc.splitTextToSize(s.street_address, 160);
+      const rowLines = Math.max(nameLines.length, addrLines.length);
+      doc.text(String(i+1), marginX, y);
+      doc.text(nameLines, marginX+24, y);
+      doc.text(addrLines, marginX+190, y);
+      doc.text(new Date(s.signed_at).toLocaleDateString(), marginX+360, y);
+      doc.line(marginX+415, y+2, pageWidth-marginX, y+2); // blank line for an actual wet signature
+      y += rowLines*12 + 12;
+      doc.setDrawColor(220,220,210);
+      doc.line(marginX, y-6, pageWidth-marginX, y-6);
+    });
+
+    y += 16;
+    if(y > pageHeight - 40){ doc.addPage(); y = 50; }
+    doc.setFont('helvetica','italic'); doc.setFontSize(8);
+    doc.setTextColor(90,90,84);
+    doc.text(`Organizer copy — generated ${new Date().toLocaleString()}. Contains ${signers.length} signer(s), ${signers.filter(s=>s.confirmed_voter).length} self-identified as registered Bethel voters. Not an official town document.`, marginX, pageHeight-30);
+
+    const slug = topic.title.toLowerCase().replace(/[^a-z0-9]+/g,'-').slice(0,40).replace(/(^-|-$)/g,'');
+    doc.save(`bethel-common-petition-${slug || 'organizer-copy'}.pdf`);
+  }catch(e){ console.error('could not generate petition PDF', e); alert('Could not generate the petition document. Try again.'); }
 }
 function ownerCheck(realEmail){
   const entered = prompt('Enter the email you used when posting this:');
@@ -439,6 +844,22 @@ function ownerCheck(realEmail){
 ===================================================================== */
 let topics = [];
 let currentTab = 'home';
+let moderatorAction = null; // pending violation-capture flow: { kind:'topic'|'reply'|'block', ... } or null when not active
+const VIOLATION_TYPES = [
+  'Personal attack or harassment',
+  'Threatening language',
+  'Profanity',
+  'Off-topic / spam',
+  'Impersonation or misinformation',
+  'Other (explain in comments)'
+];
+const ACTION_BASIS_OPTIONS = [
+  { value:'multiple', label:'Part of a pattern of multiple violations by this email' },
+  { value:'severe', label:'This single violation was severe enough on its own' },
+  { value:'instant', label:'Instant deletion for a flagrant violation' },
+  { value:'other', label:'Other (write in below)' }
+];
+let aboutSlideIndex = 0; // which About-page slide is currently showing
 let currentSort = 'rising';
 let currentSearch = '';
 let currentCategoryFilter = '';
@@ -450,9 +871,13 @@ let flaggedMap = JSON.parse(localStorage.getItem('tc-flagged') || '{}');
 let isModerator = false; // session-only, requires passphrase each visit
 let editingTopic = null; // topic id currently being edited
 let editingReply = null; // {topicId, index} currently being edited
-let postKind = 'discussion'; // 'discussion' | 'poll' — for the new-topic form
+let postKind = 'discussion'; // 'discussion' | 'poll' | 'petition' — for the new-topic form
 let newPollOptions = ['', '']; // draft option text while creating a poll
+let petitionSigners = {}; // petitionId -> array of {name,email,confirmed_voter,signed_at} (public fields only)
+let unlockedPetitionSigners = {}; // petitionId -> array of full signer rows (incl. street_address), only after a correct passcode
 let votedPolls = JSON.parse(localStorage.getItem('tc-voted-polls') || '{}'); // pollId -> option index (this browser only, convenience — DB unique constraint is the real guard)
+let signedPetitions = JSON.parse(localStorage.getItem('tc-signed-petitions') || '{}'); // petitionId -> true (this browser only, convenience — DB unique constraint on email is the real guard)
+function saveSignedPetitions(){ localStorage.setItem('tc-signed-petitions', JSON.stringify(signedPetitions)); }
 /* Private, per-device notes for a board member's own use — never sent to the server, never shared with other members or town staff. */
 let myMeetingFlags = JSON.parse(localStorage.getItem('tc-meeting-flags') || '{}'); // topicId -> {flagged:bool, note:string}
 function saveMeetingFlags(){ localStorage.setItem('tc-meeting-flags', JSON.stringify(myMeetingFlags)); }
@@ -460,17 +885,17 @@ function isFlaggedForMeeting(topicId){ return !!(myMeetingFlags[topicId] && myMe
 let showOnlyFlagged = false;
 let agreementItemsOpen = {}; // itemId -> bool, for the individual expandable agreement items
 const AGREEMENT_ITEMS = [
-  { id:'public', label:'A public forum, not run by the public', detail:"Like Select Board meetings, this forum is held <em>in</em> the public, not <em>of</em> the public — anyone can observe and take part, but it isn't run or owned by the assembled public. Order and mutual respect are still expected of everyone." },
+  { id:'public', label:'A public forum, moderated', detail:"Anyone in the public can observe and take part, but keeping order and enforcing these agreements is the only way this system of community discourse can succeed. Violations of these agreements are ultimately at the moderator's discretion." },
   { id:'topic', label:'Stay on topic', detail:'Comments should be addressed to the topic or to the community as a whole, not aimed at any individual person.' },
   { id:'violation', label:'What counts as a violation', detail:"A violation of these agreements includes personal, impertinent, threatening, or profane remarks, or content aimed at an individual rather than the topic at hand. Harassment or threats aren't tolerated." },
   { id:'reporting', label:'Reporting', detail:'Anyone reading this forum — not just those posting — can report a violation they see. It takes 3 separate reports, not just one person, before a post is pulled from public view and escalated for a moderator to review.' },
-  { id:'consequences', label:'Consequences', detail:'If your content is removed for a violation, that alone will not necessarily stop you from posting again — but a second removal will block your email from posting further. The moderator reserves the right to block an email immediately after a single violation if it is deemed severe.' },
-  { id:'privacy', label:'Privacy', detail:'Posting here is anonymous by design — choose any display name you like so you can give honest opinions. A private email is required to post, but it is never shown publicly or to town management by default. It is only seen by a moderator if a post is flagged and escalated for review.' }
+  { id:'consequences', label:'Consequences', detail:'If your content is removed for a violation, that alone will not necessarily stop you from posting again — but a second removal will block your email from posting further. The moderator may act on a single flagrant violation immediately and at their own discretion — removing the content and/or blocking the email — without waiting for reports to accumulate first. A copy of exactly what you posted, plus the moderator\'s stated reason for removing it, is kept on file — you can request a copy of that record at any time.' },
+  { id:'privacy', label:'Privacy', detail:'Posting here is anonymous by design — choose any display name you like so you can give honest opinions. A private email is required to post, but it is never shown publicly. It is only seen by a moderator if a post is flagged and escalated for review. <strong>The one exception is petitions:</strong> starting or signing a petition is not anonymous — organizers and signers are identified by their real printed name, since that\'s how petitions work in practice and what gives them credibility.' }
 ];
 let compactReminderOpen = false;
 function saveVotedPolls(){ localStorage.setItem('tc-voted-polls', JSON.stringify(votedPolls)); }
 let blockedEmails = new Set();
-let violations = {}; // email -> count of moderator-deleted flagged content
+let violations = {}; // email -> { count, history: [ {contextTitle, content, authorName, violationType, actionBasis, comments, action, violationNumber, timestamp} ] }
 
 const ROLE_LABELS = { resident:'Resident', staff:'Town Staff', board:'Select Board Member' };
 
@@ -564,7 +989,7 @@ function pollTotalVotes(t){
   if(!t.poll) return 0;
   return t.poll.counts.reduce((a,b)=>a+(b||0), 0);
 }
-const POLL_COLORS = ['#3B6156','#CBA135','#8C3A2A','#8A6A1E','#182310','#5B5B54'];
+const POLL_COLORS = ['#3E5A73','#C1602E','#5F7A4E','#D9A441','#7A3A16','#6C93AC'];
 function pollPieChart(t){
   const total = pollTotalVotes(t);
   if(!total) return `background:var(--paper-dim);`;
@@ -579,7 +1004,82 @@ function pollPieChart(t){
   return `background:conic-gradient(${stops});`;
 }
 
-/* ---- blocked emails ---- */
+/* ---- petitions ----
+   Schema: petitions / petition_private (hashed passcode, never publicly readable) /
+   petition_signers (public: name + confirmed_voter) / petition_signers_private
+   (email + street address, never publicly readable). All writes go through
+   security-definer RPCs (create_petition, sign_petition, get_petition_full) so the
+   client never has a path to read private columns directly. */
+function genPasscode(){
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // no confusing chars (0/O, 1/I)
+  let out = '';
+  for(let i=0;i<8;i++) out += chars[Math.floor(Math.random()*chars.length)];
+  return out;
+}
+// Creates the petition's private record (hashed passcode) via the create_petition RPC.
+// petitionId is the same id as the topic row it's attached to.
+async function createPetitionRecord({ id, title, description, category, creatorName, creatorEmail, passcode, closesAt }){
+  const res = await fetch(sbUrl('rpc/create_petition'), {
+    method:'POST',
+    headers: SB_HEADERS,
+    body: JSON.stringify({
+      p_id: id, p_title: title, p_description: description, p_category: category||null,
+      p_creator_name: creatorName, p_creator_email: creatorEmail.trim().toLowerCase(),
+      p_passcode: passcode, p_closes_at: closesAt
+    })
+  });
+  if(!res.ok) throw new Error('create_petition failed: '+res.status);
+}
+async function loadPetitionSigners(){
+  try{
+    const res = await fetch(sbUrl('petition_signers?select=id,petition_id,full_name,confirmed_voter,signed_at'), { headers: SB_HEADERS });
+    if(!res.ok) throw new Error('GET petition_signers failed: '+res.status);
+    const rows = await res.json();
+    petitionSigners = {};
+    rows.forEach(r=>{
+      if(!petitionSigners[r.petition_id]) petitionSigners[r.petition_id] = [];
+      petitionSigners[r.petition_id].push({ id:r.id, petition_id:r.petition_id, name:r.full_name, confirmed_voter:r.confirmed_voter, signed_at:r.signed_at });
+    });
+  }catch(e){ console.error('petition_signers load error', e); }
+}
+function petitionSignerList(petitionId){ return petitionSigners[petitionId] || []; }
+function petitionConfirmedCount(petitionId){ return petitionSignerList(petitionId).filter(s=>s.confirmed_voter).length; }
+// Throws Error('DUPLICATE') on a repeat signature from the same email, matching castVote's convention.
+// Routes through sign_petition so email/street_address land only in the private table.
+async function signPetition(petitionId, name, email, streetAddress, confirmedVoter){
+  const clean = email.trim().toLowerCase();
+  const res = await fetch(sbUrl('rpc/sign_petition'), {
+    method:'POST',
+    headers: SB_HEADERS,
+    body: JSON.stringify({ p_id: uid(), p_petition_id: petitionId, p_full_name: name, p_email: clean, p_street_address: streetAddress, p_confirmed_voter: confirmedVoter })
+  });
+  if(!res.ok){
+    let body = {}; try{ body = await res.json(); }catch(_e){}
+    if(res.status === 409 || body.code === '23505') throw new Error('DUPLICATE');
+    throw new Error('sign failed: '+res.status);
+  }
+  if(!petitionSigners[petitionId]) petitionSigners[petitionId] = [];
+  petitionSigners[petitionId].push({ id:'', petition_id:petitionId, name, confirmed_voter:confirmedVoter, signed_at:new Date().toISOString() });
+}
+// Calls the passcode-gated Postgres function — returns full rows (incl. email, street_address)
+// only on a correct match. The function raises on a wrong passcode; we treat that as "no rows".
+async function unlockPetition(petitionId, passcode){
+  const res = await fetch(sbUrl('rpc/get_petition_full'), {
+    method:'POST',
+    headers: SB_HEADERS,
+    body: JSON.stringify({ p_petition_id: petitionId, p_passcode: passcode.trim() })
+  });
+  if(!res.ok){
+    let body = {}; try{ body = await res.json(); }catch(_e){}
+    if(res.status === 400 && /incorrect passcode/i.test(body.message||'')) return [];
+    throw new Error('unlock failed: '+res.status);
+  }
+  const rows = await res.json();
+  // normalize full_name -> name so the PDF/print code doesn't need to change
+  return rows.map(r=>({ name:r.full_name, email:r.email, street_address:r.street_address, signed_at:r.signed_at, confirmed_voter:r.confirmed_voter }));
+}
+
+
 async function loadBlockedEmails(){
   try{
     const res = await fetch(sbUrl('blocked_emails?select=email'), { headers: SB_HEADERS });
@@ -606,49 +1106,102 @@ async function unblockEmail(email){
   blockedEmails.delete(clean);
 }
 
-/* ---- violations: first flagged-and-removed post is a pass; the 2nd auto-blocks ---- */
+/* ---- violations: kept as a full history per email, not just a count, so a moderator has an
+   on-file record of every removed post — for their own reference and as proof if a resident asks
+   what was removed and why. First flagged-and-removed post is a pass; the 2nd auto-blocks. */
 async function loadViolations(){
   try{
-    const res = await fetch(sbUrl('email_violations?select=email,count'), { headers: SB_HEADERS });
+    const res = await fetch(sbUrl('email_violations?select=email,count,history'), { headers: SB_HEADERS });
     if(!res.ok) throw new Error('GET email_violations failed: '+res.status);
     const rows = await res.json();
     violations = {};
-    rows.forEach(r=>{ violations[r.email] = r.count; });
+    rows.forEach(r=>{ violations[r.email] = { count: r.count, history: r.history || [] }; });
   }catch(e){ console.error('email_violations load error', e); }
 }
-function violationCount(email){ return violations[(email||'').trim().toLowerCase()] || 0; }
-async function recordViolation(email){
-  if(!email) return 0;
+function violationCount(email){
+  const v = violations[(email||'').trim().toLowerCase()];
+  return v ? v.count : 0;
+}
+function violationHistory(email){
+  const v = violations[(email||'').trim().toLowerCase()];
+  return v ? v.history : [];
+}
+// Logs one moderator action (delete or block) to that email's on-file history, and returns the
+// running violation number (1st, 2nd, 3rd...) for this email — this is the "system remembers for
+// you" tally, so you never have to recall whether someone's been flagged before.
+async function recordViolationDetailed(email, entry){
+  if(!email) return null;
   const clean = email.trim().toLowerCase();
-  const newCount = (violations[clean]||0) + 1;
+  const prev = violations[clean] || { count:0, history:[] };
+  const newCount = prev.count + 1;
+  const logEntry = { ...entry, violationNumber:newCount, timestamp:new Date().toISOString() };
+  const newHistory = [...prev.history, logEntry];
   try{
     await fetch(sbUrl('email_violations?on_conflict=email'), {
       method:'POST',
       headers:{...SB_HEADERS, 'Prefer':'resolution=merge-duplicates'},
-      body: JSON.stringify([{ email: clean, count: newCount, last_violation: new Date().toISOString() }])
+      body: JSON.stringify([{ email: clean, count: newCount, last_violation: new Date().toISOString(), history: newHistory }])
     });
   }catch(e){ console.error('record violation failed', e); }
-  violations[clean] = newCount;
-  if(newCount >= 2){
-    try{ await blockEmail(clean, 'automatic: 2nd violation'); }catch(e){ console.error(e); }
-  }
+  violations[clean] = { count:newCount, history:newHistory };
   return newCount;
+}
+// Finds any other currently-flagged or already-hidden content by this same email, across the
+// whole site — so a moderator reviewing one post can see the fuller pattern before deciding.
+function otherFlaggedContentByEmail(email, excludeTopicId, excludeReplyKey){
+  if(!email) return [];
+  const clean = email.trim().toLowerCase();
+  const found = [];
+  topics.forEach(t=>{
+    if((t.flags>0 || t.hidden) && (t.contact_email||'').trim().toLowerCase()===clean && t.id!==excludeTopicId){
+      found.push({ kind:'topic', title:t.title, snippet:t.body, id:t.id });
+    }
+    t.replies.forEach((r,i)=>{
+      const key = t.id+'_'+i;
+      if(((r.flags||0)>0 || r.hidden) && (r.contactEmail||'').trim().toLowerCase()===clean && key!==excludeReplyKey){
+        found.push({ kind:'reply', title:`Reply on: ${t.title}`, snippet:r.body, id:t.id });
+      }
+    });
+  });
+  return found;
 }
 
 function seedTopics(){
   return [
     {
-      id:'t1', title:'What should we prioritize for next year\'s road budget?',
-      body:'The select board is looking at three options for next year\'s paving budget: resurfacing Main Street, shoring up the covered bridge approach, or spreading smaller repairs across more back roads. Would like to hear what matters most to people who drive these roads daily.',
-      category:'Roads & Plowing', author_type:'staff', author_name:'Town Manager\'s Office',
-      contact_email:'townoffice@example.gov', flags:0, hidden:false,
+      id:'t1', title:'Anyone interested in a book club?',
+      body:'Been wanting to start a casual monthly book club, nothing fancy — just neighbors, some snacks, and a chance to talk about something other than the weather. Would anyone show up?',
+      category:'General', author_type:'resident', author_name:'A neighbor',
+      contact_email:'neighbor@example.com', flags:0, hidden:false,
       reactions:{support:0,concern:0,idea:0}, replies:[]
     },
     {
-      id:'t2', title:'Recreation Center schedule — what are we missing?',
-      body:'Starting a thread to collect thoughts on recreation center hours and programming for the coming season. What times or programs would actually get you and your family there?',
-      category:'Recreation', author_type:'resident', author_name:'A neighbor',
-      contact_email:'neighbor@example.com', flags:0, hidden:false,
+      id:'t2', title:'Rec Committee: what would get your family through the door?',
+      body:"Posting on behalf of the Recreation Committee (and cross-posting for the Equity & Inclusion Committee, since accessibility is part of this too). We're looking at program times, scholarship/fee-waiver awareness, and transportation as barriers before we finalize next season's schedule. If cost, timing, transportation, or accessibility have ever kept your family from using the rec center or joining a program, we want to hear about it specifically — not just \"more programs,\" but what's stood in the way.",
+      category:'Recreation', author_type:'resident', author_name:'Rec Committee',
+      contact_email:'neighbor2@example.com', flags:0, hidden:false,
+      reactions:{support:0,concern:0,idea:0}, replies:[]
+    },
+    {
+      id:'t3', title:'Act 181\'s road rule — anyone else worried about their driveway?',
+      body:"I own about 40 acres outside the village, and I'm concerned about how Act 181's new \"road rule\" could affect rural parcels like mine. As I understand it, once the rule takes effect, building or extending a driveway past 800 feet (or a combined road/driveway over 2,000 feet) in a Tier 2 area can trigger a full Act 250 review — even if nothing else about the project would otherwise require one. Out here, a long driveway isn't unusual, it's just what you get with our terrain and lot sizes — it doesn't mean the land is being developed at any unusual scale. I'm worried this could mean real permitting cost and delay for ordinary things like building a single home site or helping a kid put a place on family land, not just big subdivisions. Has anyone looked into how this would actually apply to property around Bethel, and whether the town or regional planning commission has a way to weigh in on the mapping before Tier 3 designations are finalized?",
+      category:'Land Use', author_type:'resident', author_name:'A rural landowner',
+      contact_email:'neighbor3@example.com', flags:0, hidden:false,
+      reactions:{support:0,concern:0,idea:0}, replies:[]
+    },
+    {
+      id:'t4', title:'Equity & Inclusion Committee: help us make our neighborhood conversations work for you',
+      body:"We're organizing a series of neighborhood conversations this fall, staggered by hamlet so you can attend whichever session is easiest to get to. One thing we already know needs work: one of our venues isn't wheelchair accessible. If timing, location, or accessibility would keep you from attending, or if there's a topic around equity and inclusion in town you wish we'd address, tell us here.",
+      category:'Board Process & Transparency', author_type:'resident', author_name:'Equity & Inclusion Committee',
+      contact_email:'neighbor4@example.com', flags:0, hidden:false,
+      reactions:{support:0,concern:0,idea:0}, replies:[]
+    },
+    {
+      id:'t5', title:'Conservation Commission: would you attend a bird walk at Quimby Town Forest?',
+      body:"Audubon's Forest program is planning a public event comparing bird populations before and after last year's harvest at Quimby Town Forest, likely next spring. Would this be something you'd come out for?",
+      category:'Events', author_type:'resident', author_name:'Conservation Commission',
+      contact_email:'neighbor5@example.com', flags:0, hidden:false,
+      poll:{ question:'Conservation Commission: would you attend a bird walk at Quimby Town Forest?', options:['Yes, definitely','Maybe, depending on timing','Probably not'], counts:[0,0,0] },
       reactions:{support:0,concern:0,idea:0}, replies:[]
     }
   ];
@@ -660,7 +1213,8 @@ function seedTopics(){
 function momentum(t){
   const r = t.reactions;
   const pollVotes = t.poll ? pollTotalVotes(t) : 0;
-  return (r.support||0) + (r.concern||0) + (r.idea||0) + t.replies.length*2 + pollVotes;
+  const petitionCount = t.is_petition ? petitionSignerList(t.id).length : 0;
+  return (r.support||0) + (r.concern||0) + (r.idea||0) + t.replies.length*2 + pollVotes + petitionCount;
 }
 function isClosed(t){
   const now = Date.now();
@@ -705,6 +1259,24 @@ function timeAgo(ts){
 function escapeHtml(str){
   const d = document.createElement('div'); d.textContent = str; return d.innerHTML;
 }
+// Lightweight markdown-style formatting for post/reply bodies: **bold**, *italic*, [text](url), line breaks.
+// Escapes HTML first so this never introduces raw markup — safe to render with innerHTML.
+function parseMarkdownLite(str){
+  let out = escapeHtml(str || '');
+  out = out.replace(/\[([^\]\[]+)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+  out = out.replace(/\*\*([^\*]+)\*\*/g, '<strong>$1</strong>');
+  out = out.replace(/\*([^\*]+)\*/g, '<em>$1</em>');
+  out = out.replace(/\n/g, '<br>');
+  return out;
+}
+function mdToolbarHtml(targetId){
+  return `<div class="md-toolbar" style="display:flex;gap:6px;margin:4px 0 6px;">
+    <button type="button" class="report-btn" data-md-wrap="${targetId}" data-md-before="**" data-md-after="**" title="Bold"><strong>B</strong></button>
+    <button type="button" class="report-btn" data-md-wrap="${targetId}" data-md-before="*" data-md-after="*" title="Italic"><em>I</em></button>
+    <button type="button" class="report-btn" data-md-link="${targetId}" title="Insert link">🔗 Link</button>
+  </div>
+  <p style="font-size:11px;color:var(--ink-soft);margin:0 0 6px;">Formatting supported: **bold**, *italic*, and [link text](https://...)</p>`;
+}
 function uid(){ return 't'+Math.random().toString(36).slice(2,10); }
 
 function renderAgreements(compact){
@@ -714,7 +1286,7 @@ function renderAgreements(compact){
     }
     return `
     <div class="agreements-panel compact">
-      <strong>A reminder before you post:</strong> as adapted from Section F of the <a href="#" data-open-section-f="1">Select Board's public comment rules</a>, comments must be addressed to the topic, not to individuals, and must not include personal, threatening, or profane remarks. Bethel Town Common also treats abusive or harassing language as a violation. Content that violates these agreements may be removed at a moderator's discretion. It takes 3 separate reports — not just one person — before a post is pulled from public view and escalated for review. A first removal will not necessarily stop you from posting again; a second removal will block your email from posting further. The moderator reserves the right to block an email immediately after a single violation if it is deemed severe.
+      <strong>A reminder before you post:</strong> as adapted from Section F of the <a href="#" data-open-section-f="1">Select Board's public comment rules</a>, comments must be addressed to the topic, not to individuals, and must not include personal, threatening, or profane remarks. Bethel Town Common also treats abusive or harassing language as a violation. Content that violates these agreements may be removed at a moderator's discretion. It takes 3 separate reports — not just one person — before a post is pulled from public view and escalated for review, but a moderator may also act immediately on a single flagrant violation without waiting for reports. A first removal will not necessarily stop you from posting again; a second removal will block your email from posting further. The moderator may block an email immediately after a single violation if it is deemed severe. If your content is ever removed, a copy of exactly what you posted, plus the moderator's stated reason for removing it, is kept on file — you can request a copy of that record at any time.
       <div style="margin-top:8px;"><button class="agreements-collapse-btn" data-toggle-compact-agreements="1">Collapse</button></div>
     </div>`;
   }
@@ -742,6 +1314,19 @@ function renderAgreements(compact){
 function render(){
   const app = document.getElementById('app');
   const navTabs = document.getElementById('navTabs');
+  const aboutLinkEl = document.getElementById('aboutLink');
+  if(aboutLinkEl) aboutLinkEl.style.display = currentTab === 'about' ? 'none' : '';
+  const printHeadingEl = document.getElementById('printPageHeading');
+  if(printHeadingEl){
+    const openTopic = currentTopicId ? topics.find(x=>x.id===currentTopicId) : null;
+    printHeadingEl.classList.toggle('hide-for-petition', !!(openTopic && openTopic.is_petition));
+  }
+  if(moderatorAction){
+    if(navTabs) navTabs.style.display = 'none';
+    app.innerHTML = renderModeratorActionForm();
+    attachHandlers();
+    return;
+  }
   if(currentTab === 'about'){
     if(navTabs) navTabs.style.display = 'none';
     app.innerHTML = renderAbout();
@@ -761,22 +1346,52 @@ function render(){
   attachHandlers();
 }
 
+const ABOUT_SLIDES = [
+  {
+    icon: `<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8 50 L32 14 L56 50" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><line x1="18" y1="50" x2="18" y2="34" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><line x1="32" y1="50" x2="32" y2="26" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><line x1="46" y1="50" x2="46" y2="34" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><line x1="6" y1="50" x2="58" y2="50" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>`,
+    title: 'A place to gather',
+    body: "Vermont towns have long had commons — shared spaces for neighbors to gather. Bethel has several: the bandshell, the ball fields, Town Hall, the school gymnasium. We gather at the white church, at J&amp;J's, at Babe's, at the new Bethel Arts Center."
+  },
+  {
+    icon: `<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M10 16h30a6 6 0 0 1 6 6v14a6 6 0 0 1-6 6H26l-10 10V42h-6a6 6 0 0 1-6-6V22a6 6 0 0 1 6-6z" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/><circle cx="20" cy="29" r="2" fill="currentColor"/><circle cx="29" cy="29" r="2" fill="currentColor"/><circle cx="38" cy="29" r="2" fill="currentColor"/></svg>`,
+    title: 'Talk through what matters',
+    body: "Bethel Town Common is the same idea. A place for residents to talk through what matters to us most, from budgets to back roads. Vermonters have been known to have a healthy debate, but we're neighbors, friends, and family first. What we have in common far outweighs our differences, starting with our love for Bethel."
+  },
+  {
+    icon: `<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M32 8 L54 16 V30 C54 44 44 54 32 58 C20 54 10 44 10 30 V16 Z" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/><line x1="32" y1="24" x2="32" y2="36" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><circle cx="32" cy="44" r="1.8" fill="currentColor"/></svg>`,
+    title: 'Not an official town channel',
+    body: "It isn't run by Town Management or the Select Board, and nothing posted here is automatically read, tracked, or acted on by anyone at the town. What it is: a place to see what your neighbors are actually talking about, gauge what's got real momentum, and build something together. If a topic here matters to you, it's on you to carry it further — print a thread, note a poll result, point to how many people weighed in — and bring it to a posted Select Board meeting yourself, if that's where it belongs."
+  },
+  {
+    icon: `<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="20" cy="24" r="7" stroke="currentColor" stroke-width="3"/><circle cx="44" cy="24" r="7" stroke="currentColor" stroke-width="3"/><path d="M8 50c0-8 5.4-14 12-14s12 6 12 14" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><path d="M32 50c0-8 5.4-14 12-14s12 6 12 14" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>`,
+    title: 'More than town business',
+    body: "This isn't only for town business, either. Bethel Town Common is just as much a place to build community — start a thread if you're looking for others who share a hobby, want to get a book club going, try and plan a themed community meal, or just want the town's honest opinion on which internet provider or mechanic to use. Building community is exactly what a common is for."
+  }
+];
+
 function renderAbout(){
+  const slide = ABOUT_SLIDES[aboutSlideIndex];
+  const dots = ABOUT_SLIDES.map((s,i)=>`<button class="about-dot ${i===aboutSlideIndex?'active':''}" data-about-slide="${i}" aria-label="Go to slide ${i+1}"></button>`).join('');
   return `
-    <div class="thread-post">
-      <p style="font-size:14px;margin:0 0 12px;">Vermont towns have long had commons — shared spaces for neighbors to gather. Bethel has several: the bandshell, the ball fields, Town Hall, the school gymnasium. We gather at the white church, at J&amp;J's, at Babe's, at the new Bethel Arts Center.</p>
-      <p style="font-size:14px;margin:0 0 12px;">Bethel Town Common is the same idea. A place for residents to talk through what matters to us most, from budgets to back roads. Vermonters have been known to have a healthy debate, but we're neighbors, friends, and family first. What we have in common far outweighs our differences, starting with our love for Bethel.</p>
-      <p style="font-size:14px;margin:0 0 12px;">It's the intention of Bethel Town Common to be a place that helps gather residents' input and discussion on town topics. These conversations aren't official town business, and nothing here is binding — that only happens at posted Select Board meetings. This is simply one more way for residents to be heard.</p>
-      <p style="font-size:14px;margin:0;">This isn't only for town business, either. Bethel Town Common is just as much a place to build community — start a thread if you're looking for others who share a hobby, want to get a book club going, try and plan a themed community meal, or just want the town's honest opinion on which internet provider or mechanic to use. Building community is exactly what a common is for.</p>
+    <div class="about-carousel">
+      <button class="about-nav-arrow" data-about-prev="1" aria-label="Previous">‹</button>
+      <div class="about-slide" data-about-next="1" title="Tap to continue">
+        <div class="about-slide-icon">${slide.icon}</div>
+        <div class="about-slide-count">${aboutSlideIndex+1} of ${ABOUT_SLIDES.length}</div>
+        <h2 class="about-slide-title">${slide.title}</h2>
+        <p class="about-slide-body">${slide.body}</p>
+      </div>
+      <button class="about-nav-arrow" data-about-next="1" aria-label="Next">›</button>
     </div>
-    <div class="form-panel">
+    <div class="about-dots">${dots}</div>
+    <div class="form-panel" style="margin-top:24px;">
       <h2 style="font-size:17px;margin-bottom:14px;">How are you visiting today?</h2>
       <div style="display:flex;flex-direction:column;gap:10px;">
         <button class="btn-primary" data-choose-role="resident" style="padding:12px;font-size:14px;">I'm a community member</button>
-        <button class="btn-primary" data-choose-role="staff" style="padding:12px;font-size:14px;background:var(--gold);color:var(--pine-deep);">I'm Town Staff</button>
+        <button class="btn-primary" data-choose-role="staff" style="padding:12px;font-size:14px;background:var(--paper-dim);color:var(--ink);border:1px solid var(--line);">I'm Town Staff</button>
         <button class="btn-primary" data-choose-role="board" style="padding:12px;font-size:14px;background:var(--paper-dim);color:var(--ink);border:1px solid var(--line);">I'm a Select Board Member</button>
       </div>
-      <p style="font-size:11.5px;color:var(--ink-soft);margin-top:12px;margin-bottom:0;">Select Board Members can read everything here, but per Vermont's Open Meeting Law, can't reply or start discussions on the platform.</p>
+      <p style="font-size:11.5px;color:var(--ink-soft);margin-top:12px;margin-bottom:0;">Town Staff requires a passphrase from the town office. Select Board Members can read everything here, but per Vermont's Open Meeting Law, can't reply or start discussions on the platform.</p>
     </div>
   `;
 }
@@ -803,8 +1418,9 @@ function renderHome(){
     <div class="card" data-open="${t.id}">
       <div class="badges">
         <span class="badge category">${escapeHtml(t.category)}</span>
-        ${t.poll ? '<span class="badge official">🗳️ Poll</span>' : ''}
         ${t.author_type==='staff' ? '<span class="badge official">Town Management</span>' : ''}
+        ${t.poll ? '<span class="badge official">🗳️ Poll</span>' : ''}
+        ${t.is_petition ? '<span class="badge official">📋 Petition</span>' : ''}
         ${t.residency && t.residency !== 'Bethel' ? `<span class="badge neighbor">🏘️ ${escapeHtml(t.residency)}</span>` : ''}
         ${isClosed(t) ? '<span class="badge closed">Closed</span>' : ''}
         ${viewerRole==='board' && isFlaggedForMeeting(t.id) ? '<span class="badge official">📌 Flagged (private)</span>' : ''}
@@ -815,7 +1431,7 @@ function renderHome(){
         <div class="byline mono">${escapeHtml(t.author_name)} · ${timeAgo(t.created_at)}</div>
         <div style="display:flex;align-items:center;gap:14px;">
           <div class="stats">
-            ${t.poll ? `<span class="stat">🗳️ ${pollTotalVotes(t)} votes</span>` : `
+            ${t.poll ? `<span class="stat">🗳️ ${pollTotalVotes(t)} votes</span>` : t.is_petition ? `<span class="stat">✍️ ${petitionSignerList(t.id).length} signatures</span>` : `
             <span class="stat">👍 ${t.reactions.support}</span>
             <span class="stat">⚠️ ${t.reactions.concern}</span>
             <span class="stat">💡 ${t.reactions.idea}</span>`}
@@ -828,7 +1444,7 @@ function renderHome(){
   }).join('');
 
   return `
-    <p style="font-size:13px;color:var(--ink-soft);margin:0 0 14px;">A reminder: this page is for generating discussion only — nothing posted here has decision-making power. Other ways to stay engaged: email <a href="https://townofbethelvt.com/town-manager" target="_blank" rel="noopener">Town Management</a> or a <a href="https://townofbethelvt.com/selectboard" target="_blank" rel="noopener">Select Board member</a> directly, stop by the <a href="https://www.townofbethelvt.com" target="_blank" rel="noopener">Town Office</a> in person, or attend a Select Board meeting — held every 2nd and 4th Monday at 6 PM at <a href="https://www.google.com/maps/dir/?api=1&destination=318+Main+St%2C+Bethel%2C+VT+05032" target="_blank" rel="noopener">Bethel Town Hall (get directions)</a>. There's plenty of on-site parking, with an accessible entrance in the rear, and time set aside for public comment.</p>
+    <p style="font-size:13px;color:var(--ink-soft);margin:0 0 14px;">A reminder: this is an independent, resident-run site, not affiliated with the Town of Bethel — nothing posted here reaches Town Management or the Select Board automatically. If you want to make sure your voice actually gets there, here's how: email <a href="https://townofbethelvt.com/town-manager" target="_blank" rel="noopener">Town Management</a> or a <a href="https://townofbethelvt.com/selectboard" target="_blank" rel="noopener">Select Board member</a> directly, stop by the <a href="https://www.townofbethelvt.com" target="_blank" rel="noopener">Town Office</a> in person, or attend a Select Board meeting — held every 2nd and 4th Monday at 6 PM at <a href="https://www.google.com/maps/dir/?api=1&destination=318+Main+St%2C+Bethel%2C+VT+05032" target="_blank" rel="noopener">Bethel Town Hall (get directions)</a>. There's plenty of on-site parking, with an accessible entrance in the rear, and time set aside for public comment.</p>
     ${renderAgreements(false)}
     <div class="toolbar">
       <div class="sort-group" style="align-items:center;">
@@ -845,13 +1461,74 @@ function renderHome(){
         </label>` : ''}
       </div>
       <div style="display:flex;gap:8px;">
-        <button class="print-btn" title="Print this list">🖨️ Print list</button>
+        <button class="print-btn" title="Opens your browser's print dialog — save as PDF or print. Useful for showing community momentum at a meeting or keeping a dated record of what's currently active.">🖨️ Print list</button>
         ${viewerRole === 'board'
           ? `<span style="font-size:12px;color:var(--ink-soft);align-self:center;">Board members read discussions here but don't start them, per Open Meeting Law.</span>`
           : `<button class="new-topic-btn" id="openNewTopic">Start a discussion</button>`}
       </div>
     </div>
+    <p style="font-size:11px;color:var(--ink-soft);margin:-8px 0 14px;">🖨️ Print list opens your browser's print dialog — save as a PDF or print directly. Handy for showing community momentum at a meeting, or keeping a dated record of what's currently active.</p>
     ${list.length ? cards : (currentSearch.trim() || currentCategoryFilter ? `<div class="empty"><h3>No matching discussions</h3><p>Try a different search term or category, or clear the filters to see everything.</p></div>` : `<div class="empty"><h3>No discussions yet</h3><p>Be the first to raise something the town should be talking about.</p></div>`)}
+  `;
+}
+
+function renderPetitionWidget(t, closed){
+  const signers = petitionSignerList(t.id);
+  const confirmedCount = petitionConfirmedCount(t.id);
+  const hasSignedLocally = signedPetitions.hasOwnProperty(t.id);
+  const canSign = !closed && viewerRole !== 'board' && !hasSignedLocally;
+  const unlocked = unlockedPetitionSigners[t.id];
+
+  const signerRows = signers.map(s=>`
+    <div style="display:flex;justify-content:space-between;font-size:12.5px;padding:5px 0;border-bottom:1px solid var(--line);">
+      <span>${escapeHtml(s.name)} ${s.confirmed_voter ? '<span style="color:var(--pine-light);">✓ Bethel voter</span>' : ''}</span>
+      <span class="mono" style="color:var(--ink-soft);">${timeAgo(s.signed_at)}</span>
+    </div>`).join('') || '<p style="font-size:12.5px;color:var(--ink-soft);">No signatures yet.</p>';
+
+  const signForm = canSign ? `
+    <div class="petition-sign-form" style="margin-top:14px;">
+      <input type="text" id="petitionSignName" placeholder="Your printed name" style="width:100%;margin-bottom:8px;border:1px solid var(--line);border-radius:var(--radius);padding:8px 10px;font-family:inherit;font-size:13px;">
+      <input type="text" id="petitionSignEmail" placeholder="Your email" style="width:100%;margin-bottom:8px;border:1px solid var(--line);border-radius:var(--radius);padding:8px 10px;font-family:inherit;font-size:13px;">
+      <input type="text" id="petitionSignAddress" placeholder="Street address" style="width:100%;margin-bottom:8px;border:1px solid var(--line);border-radius:var(--radius);padding:8px 10px;font-family:inherit;font-size:13px;">
+      <label style="font-size:12px;display:flex;align-items:center;gap:6px;margin-bottom:8px;">
+        <input type="checkbox" id="petitionConfirmVoter"> I am a registered voter of Bethel, VT
+      </label>
+      <p style="font-size:11px;color:var(--ink-soft);margin:-4px 0 8px;">Not registered yet but want your signature to count? You can still sign — just leave the box above unchecked — and <a href="https://olvr.vermont.gov/" target="_blank" rel="noopener">register to vote in Vermont</a> before the petition is submitted.</p>
+      <label style="font-size:12px;display:flex;align-items:flex-start;gap:6px;margin-bottom:8px;">
+        <input type="checkbox" id="petitionConfirmPublic" style="margin-top:2px;"> I understand my full name will be shown publicly on this petition for coordination purposes — I am not signing anonymously.
+      </label>
+      <p style="font-size:11px;color:var(--ink-soft);margin:0 0 8px;">Only your name is ever shown publicly. Your email and street address are never shown publicly — they're only visible to the petition's organizer, and only after entering their one-time passcode.</p>
+      <p style="font-size:11px;color:var(--ink-soft);margin:0 0 8px;">Signing will automatically download a PDF receipt to your device (check your browser's default downloads location if you don't see it). It's your personal record of exactly what you submitted — keep it so you can compare it to the paper petition and confirm the wording matches before you give your ink-on-paper signature.</p>
+      <button class="btn-primary" data-sign-petition="${t.id}">Add my signature</button>
+    </div>
+  ` : `<p style="font-size:12.5px;color:var(--ink-soft);margin-top:8px;">${hasSignedLocally ? "You've already signed this petition." : closed ? 'This petition is closed to new signatures.' : viewerRole==='board' ? 'Viewing as Select Board Member — signatures shown for reference only.' : ''}</p>`;
+
+  const organizerSection = unlocked ? `
+    <div class="agreements-panel" style="margin-top:14px;">
+      <strong>Organizer view unlocked.</strong> ${unlocked.length} full signer record(s) available, including emails and street addresses.
+      <div style="margin-top:8px;"><button class="btn-primary" data-print-petition="${t.id}">🖨️ Print organizer copy (with contact info)</button></div>
+      <p style="font-size:11px;color:var(--ink-soft);margin-top:8px;margin-bottom:0;">This downloads a PDF to your device (check your downloads if it doesn't open automatically) — the full signer list with blank signature lines, formatted so you can collect the real ink-on-paper signatures needed to file this with the Town Clerk.</p>
+    </div>
+  ` : `
+    <div class="agreements-panel compact" style="margin-top:14px;">
+      <strong>Organizer?</strong> Enter your one-time passcode to unlock the full signer list with emails and street addresses, and generate the printable petition document.
+      <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;">
+        <input type="text" id="petitionPasscodeInput-${t.id}" placeholder="Passcode" style="flex:1;min-width:120px;border:1px solid var(--line);border-radius:var(--radius);padding:7px 10px;font-family:inherit;font-size:13px;">
+        <button class="report-btn" data-unlock-petition="${t.id}">Unlock</button>
+      </div>
+    </div>
+  `;
+
+  return `
+    <div style="margin-top:14px;">
+      <div class="agreements-panel compact">
+        <strong>Reminder:</strong> signing here shows real support, but is not a legally valid petition signature under Vermont law (17 V.S.A. § 2642), which requires an original handwritten signature on paper. The organizer will need to collect actual signatures separately for anything filed with the Town Clerk.
+      </div>
+      <div style="font-size:13px;margin:10px 0;"><strong>${signers.length}</strong> signature${signers.length===1?'':'s'} · <strong>${confirmedCount}</strong> self-identified as registered Bethel voters</div>
+      <div style="max-height:220px;overflow-y:auto;border:1px solid var(--line);border-radius:var(--radius);padding:8px 10px;background:var(--card);">${signerRows}</div>
+      ${signForm}
+      ${organizerSection}
+    </div>
   `;
 }
 
@@ -941,11 +1618,13 @@ function renderThread(id){
         ${r.hidden ? '<span class="badge official" style="background:var(--gold-soft);color:var(--gold-deep);">Hidden (moderator view)</span>' : ''}
         <span>· ${timeAgo(r.createdAt)}</span>
       </div>
-      <div class="reply-body">${escapeHtml(r.body)}</div>
+      ${r.residency && r.residency !== 'Bethel' && (r.bethelConnection || r.postPurpose) ? `<div class="mono" style="font-size:11.5px;color:var(--ink-soft);margin:-4px 0 8px;">${r.bethelConnection ? `Connection to Bethel: ${escapeHtml(r.bethelConnection)}` : ''}${r.bethelConnection && r.postPurpose ? ' · ' : ''}${r.postPurpose ? `Purpose: ${escapeHtml(r.postPurpose)}` : ''}</div>` : ''}
+      <div class="reply-body">${t.is_petition ? escapeHtml(r.body) : parseMarkdownLite(r.body)}</div>
       <div style="display:flex;gap:6px;flex-wrap:wrap;">
         <button class="report-btn" data-report-reply="${realIndex}" data-id="${t.id}" ${flaggedMap[t.id+'_r'+realIndex]?'disabled':''}>🚩 ${flaggedMap[t.id+'_r'+realIndex] ? 'Reported' : 'Report'}</button>
         <button class="report-btn" data-edit-reply="${realIndex}" data-id="${t.id}">✏️ Edit</button>
         <button class="report-btn" data-delete-reply="${realIndex}" data-id="${t.id}">🗑️ Delete</button>
+        ${isModerator ? `<button class="report-btn" style="border-color:var(--gold);color:var(--gold-deep);" data-mod-instant-delete-reply="${realIndex}" data-id="${t.id}">🛡️ Delete now (violation)</button>` : ''}
       </div>
     </div>
   `;}).join('') || '<p style="color:var(--ink-soft);font-size:13.5px;">No replies yet.</p>';
@@ -967,24 +1646,29 @@ function renderThread(id){
       <div class="badges">
         <span class="badge category">${escapeHtml(t.category)}</span>
         ${t.author_type==='staff' ? '<span class="badge official">Town Management</span>' : ''}
+        ${t.is_petition ? '<span class="badge official">📋 Petition</span>' : ''}
         ${t.residency && t.residency !== 'Bethel' ? `<span class="badge neighbor">🏘️ ${escapeHtml(t.residency)}</span>` : ''}
         ${closed ? '<span class="badge closed">Closed</span>' : ''}
       </div>
       <h2>${escapeHtml(t.title)}</h2>
       <div class="byline mono">${escapeHtml(t.author_name)} · ${timeAgo(t.created_at)}</div>
-      <div class="thread-body">${escapeHtml(t.body)}</div>
-      ${t.poll ? renderPollWidget(t, closed) : `
+      ${t.residency && t.residency !== 'Bethel' && (t.bethel_connection || t.post_purpose) ? `<div class="mono" style="font-size:11.5px;color:var(--ink-soft);margin:-4px 0 10px;">${t.bethel_connection ? `Connection to Bethel: ${escapeHtml(t.bethel_connection)}` : ''}${t.bethel_connection && t.post_purpose ? ' · ' : ''}${t.post_purpose ? `Purpose: ${escapeHtml(t.post_purpose)}` : ''}</div>` : ''}
+      <div class="thread-body">${t.is_petition ? escapeHtml(t.body) : parseMarkdownLite(t.body)}</div>
+      ${t.is_petition ? renderPetitionWidget(t, closed) : t.poll ? renderPollWidget(t, closed) : `
       <div class="reaction-row">
         <button class="reaction-btn ${reactedMap[id+'_support']?'active':''}" data-react="support" data-id="${id}" ${closed?'disabled':''}>👍 Support (${t.reactions.support})</button>
         <button class="reaction-btn ${reactedMap[id+'_concern']?'active':''}" data-react="concern" data-id="${id}" ${closed?'disabled':''}>⚠️ Concern (${t.reactions.concern})</button>
         <button class="reaction-btn ${reactedMap[id+'_idea']?'active':''}" data-react="idea" data-id="${id}" ${closed?'disabled':''}>💡 Idea (${t.reactions.idea})</button>
       </div>
+      <p style="font-size:11px;color:var(--ink-soft);margin:6px 0 0;">👍 <strong>Support</strong> — you're in favor of this as written. ⚠️ <strong>Concern</strong> — something about this gives you pause. 💡 <strong>Idea</strong> — this sparked a related thought for you. Reactions are just a quick marker of where you stand, not an explanation — if you want the group to actually hear your idea or concern, leave a comment below, or if it's substantial enough to stand on its own, start a new discussion for it.</p>
       `}<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;">
         <button class="report-btn" data-report-topic="${t.id}" ${flaggedMap[t.id+'_topic']?'disabled':''}>🚩 ${flaggedMap[t.id+'_topic'] ? 'Reported' : 'Report'}</button>
         <button class="report-btn" data-edit-topic="${t.id}">✏️ Edit</button>
         <button class="report-btn" data-delete-topic="${t.id}">🗑️ Delete</button>
-        <button class="print-btn" title="Print this discussion">🖨️ Print</button>
+        ${isModerator ? `<button class="report-btn" style="border-color:var(--gold);color:var(--gold-deep);" data-mod-instant-delete-topic="${t.id}">🛡️ Delete now (violation)</button>` : ''}
+        <button class="print-btn" title="Opens your browser's print dialog — save as PDF or print. Useful for bringing a dated copy of this discussion to a Selectboard meeting, or keeping your own record of it.">🖨️ Print</button>
       </div>
+      <p style="font-size:11px;color:var(--ink-soft);margin:8px 0 0;">🖨️ Print opens your browser's print dialog — save as a PDF or print directly. Handy for bringing a dated copy of this discussion to a Selectboard meeting, or keeping your own record of it.</p>
       <div style="margin-top:12px;"><span class="pulse-label">Momentum</span> ${pulseSVG(score)}</div>
     </div>
   `;
@@ -999,22 +1683,30 @@ function renderThread(id){
     ${canReply ? `
     <div class="reply-form">
       ${renderAgreements(true)}
-      <input type="text" id="replyName" placeholder="Your name (or 'Neighbor on Elm St')" style="width:100%;margin-bottom:8px;">
-      <input type="text" id="replyEmail" placeholder="Your email (kept private — only used if flagged for violating the community agreements)" style="width:100%;margin-bottom:8px;">
+      <input type="text" id="replyName" placeholder="${t.is_petition ? 'Your real name — replies on petitions are not anonymous' : "Your name (or 'Neighbor on Elm St')"}" style="width:100%;margin-bottom:8px;">
+      <input type="text" id="replyEmail" placeholder="${t.is_petition ? 'Your email (stays private — your name above is public, since replies on petitions are not anonymous)' : 'Your email (kept private — only used if flagged for violating the community agreements)'}" style="width:100%;margin-bottom:8px;">
       <select id="replyResidency" style="width:100%;margin-bottom:6px;border:1px solid var(--line);border-radius:var(--radius);padding:8px 10px;font-family:inherit;font-size:13px;background:#fff;">
         <option value="Bethel">Bethel resident</option>
         ${CONFIG.neighboringTowns.map(t=>`<option value="${t}">${t} resident</option>`).join('')}
         <option value="__other__">Other town</option>
       </select>
       <input type="text" id="replyResidencyOther" placeholder="Which town?" style="width:100%;margin-bottom:8px;display:none;border:1px solid var(--line);border-radius:var(--radius);padding:8px 10px;font-family:inherit;font-size:13px;">
+      <select id="replyBethelConnection" style="width:100%;margin-bottom:8px;display:none;border:1px solid var(--line);border-radius:var(--radius);padding:8px 10px;font-family:inherit;font-size:13px;background:#fff;">
+        ${CONFIG.bethelConnections.map(c=>`<option value="${c}">${c}</option>`).join('')}
+      </select>
+      <input type="text" id="replyPurpose" placeholder="What's the purpose of your post?" style="width:100%;margin-bottom:8px;display:none;border:1px solid var(--line);border-radius:var(--radius);padding:8px 10px;font-family:inherit;font-size:13px;">
+      ${mdToolbarHtml('replyBody')}
       <textarea id="replyBody" placeholder="Add your perspective..."></textarea>
+      ${!t.is_petition ? `
       <label style="font-size:12.5px;display:flex;align-items:center;gap:6px;margin-top:8px;">
-        <input type="checkbox" id="replyDownloadCopy"> Download a copy of this reply for my records (useful if it's ever flagged)
+        <input type="checkbox" id="replyAsStaff" ${viewerRole==='staff'?'checked':''}> Posting as Town Management
       </label>
-      <div class="row">
-        <label style="font-size:12.5px;display:flex;align-items:center;gap:6px;">
-          <input type="checkbox" id="replyAsStaff" ${viewerRole==='staff'?'checked':''}> Posting as Town Management
-        </label>
+      ` : ''}
+      <label style="font-size:12.5px;display:flex;align-items:center;gap:6px;margin-top:8px;">
+        <input type="checkbox" id="replyDownloadCopy"> Download a copy of this reply for my records <span style="color:var(--ink-soft);">(a PDF saves automatically to your device's downloads — useful as proof of exactly what you wrote if this reply is ever flagged for review)</span>
+      </label>
+      ${t.is_petition ? `<p style="font-size:11px;color:var(--ink-soft);margin-top:8px;margin-bottom:0;">Posting will also automatically download a separate PDF receipt of your reply plus the petition's details (category, type, meeting date) — check your device's downloads if you don't see it appear. Keep it as your record, since replies on petitions are not anonymous.</p>` : ''}
+      <div class="row" style="justify-content:flex-end;">
         <button class="btn-primary" id="submitReply">Post reply</button>
       </div>
       <p style="font-size:11px;color:var(--ink-soft);margin-top:8px;margin-bottom:0;">By posting, you agree to follow the community agreements above.</p>
@@ -1025,7 +1717,7 @@ function renderThread(id){
     </div>
     <div class="agreements-panel" style="margin-top:10px;">
       <h3 style="font-size:14px;margin-bottom:6px;">Private notes <span style="font-weight:400;text-transform:none;font-size:12px;color:var(--ink-soft);">— visible only to you, on this device</span></h3>
-      <p style="font-size:12px;color:var(--ink-soft);margin:0 0 10px;">These notes are stored only in this browser. They are never sent to the server, never shown publicly, and never visible to other board members or town staff — this is just a personal reminder for you to bring something to a posted meeting.</p>
+      <p style="font-size:12px;color:var(--ink-soft);margin:0 0 10px;">These notes are stored only in this browser. They are never sent to the server, never shown publicly, and never visible to anyone else — this is just a personal reminder for you to bring something to a posted meeting. Because these notes live only in this browser, on this device, they won't be here if you check from a different phone, tablet, or computer — be sure to bring this same device with you to the meeting if you're planning to reference a flagged topic or note there.</p>
       <button class="report-btn" data-toggle-meeting-flag="${t.id}">${isFlaggedForMeeting(t.id) ? '📌 Flagged for next meeting — remove' : '📌 Flag for next meeting'}</button>
       <textarea id="meetingNote-${t.id}" placeholder="Private note to yourself about this topic..." style="width:100%;min-height:60px;margin-top:10px;border:1px solid var(--line);border-radius:var(--radius);padding:8px 10px;font-family:inherit;font-size:13px;">${escapeHtml((myMeetingFlags[t.id]&&myMeetingFlags[t.id].note)||'')}</textarea>
       <button class="btn-primary" data-save-meeting-note="${t.id}" style="margin-top:8px;">Save note</button>
@@ -1048,8 +1740,9 @@ function renderNewTopicForm(){
     `;
   }
   const opts = CONFIG.categories.map(c=>`<option value="${c}">${c}</option>`).join('');
-  const staffDefault = viewerRole === 'staff';
   const isPoll = postKind === 'poll';
+  const isPetition = postKind === 'petition';
+  const staffDefault = viewerRole === 'staff';
 
   const optionRows = newPollOptions.map((val,i)=>`
     <div class="row" style="display:flex;gap:6px;margin-bottom:6px;">
@@ -1061,18 +1754,64 @@ function renderNewTopicForm(){
   return `
     <button class="back-link" id="backHome">&larr; Cancel</button>
     <div class="form-panel">
-      <h2 style="font-size:20px;margin-bottom:16px;">${isPoll ? 'Create a poll' : 'Start a discussion'}</h2>
+      <h2 style="font-size:20px;margin-bottom:16px;">${isPoll ? 'Create a poll' : isPetition ? 'Start a petition' : 'Start a discussion'}</h2>
       ${renderAgreements(true)}
+      ${isPetition ? `
+      <div class="agreements-panel compact">
+        <strong>Before you start a petition:</strong> this tool organizes supporters and generates a printable document — it does not collect legally valid signatures. Vermont law (17 V.S.A. § 2642) requires an actual handwritten signature from each registered voter, on paper, filed with the Town Clerk. Use this to find and count your supporters; the wet-ink signing still has to happen separately. <strong>Unlike regular discussions, petitions are not anonymous</strong> — your real printed name will be shown publicly as the organizer, the same way it would be on a paper petition.
+      </div>
+      <div class="agreements-panel" style="margin-top:10px;">
+        <strong style="display:block;margin-bottom:6px;">Vermont petition rules, at a glance</strong>
+        <p style="margin:0 0 8px;"><strong>Petitions for Annual Meeting</strong> — must contain signatures of 5% of the town's voters and be received by the Selectboard or School Board at least 47 days before Town Meeting Day. <span class="mono">17 V.S.A. § 2642(a)(3)(A)</span>. Most boards post the full warning about 40 days out, so it's courteous — and best practice — to file with the Town Clerk before the last board meeting that falls before that 40‑day mark. Call the Town Clerk to confirm timing.</p>
+        <p style="margin:0 0 8px;"><strong>Petitions for a Special Meeting</strong> — may be filed with the Town Clerk at any time and also require signatures of 5% of the town's voters. <span class="mono">17 V.S.A. § 2643(a)</span>. Once the clerk finds it conforms, a special meeting must be warned within 60 days of the petition's receipt.</p>
+        <p style="margin:0;"><strong>Rules for all petitions</strong> — the petition language must appear on every page where signatures are collected <span class="mono">§2642(a)(3)(C)(ii)</span>; each signer's printed name, signature, and street address are required <span class="mono">§2642(a)(3)(C)(iii)</span>; and a single petition may contain more than one proposed article <span class="mono">§2642(a)(3)(C)(i)</span>.</p>
+      </div>
+      <div class="agreements-panel" style="margin-top:10px;">
+        <strong style="display:block;margin-bottom:6px;">Which petition type is right for this?</strong>
+        <p style="margin:0 0 8px;"><strong>Advisory article</strong> — a recommendation only. It tells the board what voters want, but the board isn't legally required to act on it. Right for: sending a message, gauging support, asking the board to consider something, without forcing a binding outcome.</p>
+        <p style="margin:0 0 8px;"><strong>Binding article</strong> — if it passes, the town is legally obligated to carry it out (spending money, establishing a fund, changing a bylaw, authorizing an action). Right for: anything where a "yes" vote needs to actually make something happen, not just signal an opinion.</p>
+        <p style="margin:0 0 8px;"><strong>Selectboard vs. School Board</strong> — pick whichever body actually has authority over what you're asking for. Town budget, roads, land use, and general town governance go to the Selectboard; school budget, staffing, and curriculum-adjacent matters go to the School Board.</p>
+        <p style="margin:0;"><strong>Request a Special Meeting</strong> — for something that can't wait for the next Annual Meeting and needs its own dedicated meeting warned within 60 days of filing.</p>
+      </div>
+      <div class="agreements-panel compact" style="margin-top:10px;">
+        <strong>Not sure which one fits?</strong> The Town Clerk can help you figure out the right type and correct wording before you start collecting real signatures — it's worth asking first rather than redoing a petition later. Stop by <a href="https://www.google.com/maps/dir/?api=1&destination=318+Main+St%2C+Bethel%2C+VT+05032" target="_blank" rel="noopener">Bethel Town Hall (get directions)</a>, or email <a href="https://townofbethelvt.com/town-manager" target="_blank" rel="noopener">Town Management</a> to talk through what you're trying to accomplish.
+      </div>
+      <div class="field">
+        <label>What kind of petition is this?</label>
+        <select id="petitionType">
+          <option value="advisory_selectboard">Advisory article — to the Selectboard</option>
+          <option value="advisory_school">Advisory article — to the School Board</option>
+          <option value="binding_selectboard">Binding article — to the Selectboard</option>
+          <option value="binding_school">Binding article — to the School Board</option>
+          <option value="special_meeting">Request a Special Meeting</option>
+        </select>
+      </div>
+      <div class="field" id="petitionMeetingDateField" style="display:none;">
+        <label id="petitionMeetingDateLabel">Meeting date this article targets <span style="text-transform:none;font-weight:400;">(if known)</span></label>
+        <input type="date" id="petitionMeetingDate">
+      </div>
+      <div class="field" id="petitionBallotField">
+        <label style="font-size:12.5px;text-transform:none;font-weight:400;display:flex;align-items:center;gap:6px;">
+          <input type="checkbox" id="petitionRequestBallot"> Request that this article be acted on by paper ballot <span style="color:var(--ink-soft);">(the board isn't required to honor this, but any 7 voters at the meeting can request paper ballot anyway)</span>
+        </label>
+      </div>
+      <div class="field">
+        <label style="font-size:12.5px;text-transform:none;font-weight:400;display:flex;align-items:flex-start;gap:6px;">
+          <input type="checkbox" id="petitionAckFinalSay" style="margin-top:2px;"> I understand that the Selectboard, School Board, or town's legal counsel has final say over whether this article is properly worded and correctly categorized as advisory or binding, and may decline, reclassify, or ask for changes to it before it's placed on a warning.
+        </label>
+      </div>
+      ` : ''}
       <div class="field">
         <label>Type</label>
         <div class="radio-row">
-          <label><input type="radio" name="postKind" value="discussion" ${isPoll?'':'checked'}> Discussion</label>
+          <label><input type="radio" name="postKind" value="discussion" ${(!isPoll && !isPetition)?'checked':''}> Discussion</label>
           <label><input type="radio" name="postKind" value="poll" ${isPoll?'checked':''}> Poll</label>
+          <label><input type="radio" name="postKind" value="petition" ${isPetition?'checked':''}> Petition</label>
         </div>
       </div>
       <div class="field">
-        <label>${isPoll ? 'Poll question' : 'Title'}</label>
-        <input type="text" id="newTitle" placeholder="${isPoll ? 'What should we ask residents?' : 'What should the town be talking about?'}">
+        <label>${isPoll ? 'Poll question' : isPetition ? 'What are you asking for?' : 'Title'}</label>
+        <input type="text" id="newTitle" placeholder="${isPoll ? 'What should we ask residents?' : isPetition ? 'A short, clear statement of the ask' : 'What should the town be talking about?'}">
       </div>
       ${isPoll ? `
       <div class="field">
@@ -1082,12 +1821,14 @@ function renderNewTopicForm(){
       </div>
       <div class="field">
         <label>More context <span style="text-transform:none;font-weight:400;">(optional)</span></label>
+        ${mdToolbarHtml('newBody')}
         <textarea id="newBody" placeholder="Give people enough background to vote thoughtfully."></textarea>
       </div>
       ` : `
       <div class="field">
-        <label>Details</label>
-        <textarea id="newBody" placeholder="Give people enough context to weigh in with an informed opinion."></textarea>
+        <label>${isPetition ? 'Explain the ask' : 'Details'} ${isPetition ? '<span style="text-transform:none;font-weight:400;">— this text prints at the top of the petition document</span>' : ''}</label>
+        ${isPetition ? '' : mdToolbarHtml('newBody')}
+        <textarea id="newBody" placeholder="${isPetition ? 'Explain what you\'re asking for and why. This is the language that will appear on the printed petition.' : 'Give people enough context to weigh in with an informed opinion.'}"></textarea>
       </div>
       `}
       <div class="field">
@@ -1095,22 +1836,14 @@ function renderNewTopicForm(){
         <select id="newCategory">${opts}</select>
       </div>
       <div class="field">
-        <label>Your name</label>
-        <input type="text" id="newName" placeholder="How you'd like to appear">
+        <label>${isPetition ? 'Your printed name' : 'Your name'} ${isPetition ? '<span style="text-transform:none;font-weight:400;">— shown publicly as the organizer, not anonymous</span>' : ''}</label>
+        <input type="text" id="newName" placeholder="${isPetition ? 'Your real name, as it should appear publicly' : "How you'd like to appear"}">
       </div>
       <div class="field">
-        <label>Your email <span style="text-transform:none;font-weight:400;">— kept private, only used if a post is flagged for violating the community agreements</span></label>
+        <label>Your email <span style="text-transform:none;font-weight:400;">${isPetition ? '— stays private, never shown publicly. Note: unlike regular discussions, petitions are not anonymous — your printed name (not this email) is shown publicly as the organizer, and the same applies to anyone who replies here.' : '— kept private, only used if a post is flagged for violating the community agreements'}</span></label>
         <input type="text" id="newEmail" placeholder="you@example.com">
       </div>
-      <div class="field">
-        <label>Are you a Bethel resident?</label>
-        <select id="newResidency">
-          <option value="Bethel">Bethel resident</option>
-          ${CONFIG.neighboringTowns.map(t=>`<option value="${t}">${t} resident</option>`).join('')}
-          <option value="__other__">Other town</option>
-        </select>
-        <input type="text" id="newResidencyOther" placeholder="Which town?" style="display:none;margin-top:6px;">
-      </div>
+      ${!isPetition ? `
       <div class="field">
         <label>Posting as</label>
         <div class="radio-row">
@@ -1121,6 +1854,26 @@ function renderNewTopicForm(){
       <div class="field" id="passphraseField" style="display:${staffDefault?'block':'none'};">
         <label>Town management passphrase</label>
         <input type="text" id="newPassphrase" placeholder="Ask the town office if you don't have this">
+      </div>
+      ` : ''}
+      <div class="field">
+        <label>In which town do you live?</label>
+        <select id="newResidency">
+          <option value="Bethel">Bethel resident</option>
+          ${CONFIG.neighboringTowns.map(t=>`<option value="${t}">${t} resident</option>`).join('')}
+          <option value="__other__">Other town</option>
+        </select>
+        <input type="text" id="newResidencyOther" placeholder="Which town?" style="display:none;margin-top:6px;">
+      </div>
+      <div class="field" id="newBethelConnectionField" style="display:none;">
+        <label>Your connection to Bethel</label>
+        <select id="newBethelConnection">
+          ${CONFIG.bethelConnections.map(c=>`<option value="${c}">${c}</option>`).join('')}
+        </select>
+      </div>
+      <div class="field" id="newPostPurposeField" style="display:none;">
+        <label>What's the purpose of your post?</label>
+        <input type="text" id="newPostPurpose" placeholder="A short line on why you're posting here">
       </div>
       <div class="field">
         <label>How long should this stay ${isPoll ? 'open for voting' : 'open'}?</label>
@@ -1135,10 +1888,10 @@ function renderNewTopicForm(){
       </div>
       <div class="field">
         <label style="font-size:12.5px;text-transform:none;font-weight:400;display:flex;align-items:center;gap:6px;">
-          <input type="checkbox" id="newDownloadCopy"> Download a copy of this post for my records (useful if it's ever flagged)
+          <input type="checkbox" id="newDownloadCopy"> Download a copy of this post for my records <span style="color:var(--ink-soft);">(a PDF saves automatically to your device's downloads — useful as proof of exactly what you wrote if this post is ever flagged for review)</span>
         </label>
       </div>
-      <button class="btn-primary" id="submitNewTopic">${isPoll ? 'Post poll' : 'Post discussion'}</button>
+      <button class="btn-primary" id="submitNewTopic">${isPoll ? 'Post poll' : isPetition ? 'Start petition' : 'Post discussion'}</button>
       <p style="font-size:11px;color:var(--ink-soft);margin-top:8px;margin-bottom:0;">By posting, you agree to follow the community agreements above.</p>
     </div>
   `;
@@ -1158,6 +1911,19 @@ function renderDigest(){
         <div class="digest-title">🗳️ ${escapeHtml(t.title)} ${isClosed(t) ? '<span class="badge closed">Closed</span>' : ''}</div>
         <div class="digest-bars">${bars}</div>
         <div class="digest-legend">${legend}<span>💬 ${t.replies.length} replies</span></div>
+      </div>`;
+    }
+    if(t.is_petition){
+      const signers = petitionSignerList(t.id);
+      const confirmedCount = petitionConfirmedCount(t.id);
+      return `
+      <div class="digest-row" data-open="${t.id}">
+        <div class="digest-title">📋 ${escapeHtml(t.title)} ${isClosed(t) ? '<span class="badge closed">Closed</span>' : ''}</div>
+        <div class="digest-legend">
+          <span>✍️ ${signers.length} signature${signers.length===1?'':'s'}</span>
+          <span>${confirmedCount} self-identified as registered voters</span>
+          <span>💬 ${t.replies.length} replies</span>
+        </div>
       </div>`;
     }
     const r = t.reactions;
@@ -1183,16 +1949,96 @@ function renderDigest(){
 
   return `
     <div class="digest-note">
-      Sorted by momentum — reactions and replies combined. Read as few or as many replies as you have time for; the bars below show the shape of opinion at a glance before you open anything.
+      Sorted by momentum — reactions, replies, and poll votes combined. If something here matters to you, this is the data worth referencing: how many people supported or raised concerns, how many responded, how a poll came out. Read as few or as many replies as you have time for.
     </div>
     <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:14px;">
       <select id="digestCategoryFilter" style="border:1px solid var(--line);border-radius:20px;padding:5px 10px;font-size:12.5px;color:var(--ink-soft);font-family:inherit;background:var(--card);">
         <option value="">All categories</option>
         ${CONFIG.categories.map(c=>`<option value="${c}" ${digestCategoryFilter===c?'selected':''}>${c}</option>`).join('')}
       </select>
-      <button class="print-btn" title="Print this summary">🖨️ Print summary</button>
+      <button class="print-btn" title="Opens your browser's print dialog — save as PDF or print. Useful for showing officials the full picture of community sentiment at a glance.">🖨️ Print summary</button>
     </div>
+    <p style="font-size:11px;color:var(--ink-soft);margin:-8px 0 14px;">🖨️ Print summary opens your browser's print dialog — save as a PDF or print directly. Handy for giving officials the full picture of community sentiment at a glance.</p>
     ${rows}
+  `;
+}
+
+function renderModeratorActionForm(){
+  const a = moderatorAction;
+  const isBlock = a.kind === 'block';
+  const history = a.email ? violationHistory(a.email) : [];
+  const others = a.email ? otherFlaggedContentByEmail(a.email, a.kind==='topic'?a.id:a.topicId, a.kind==='reply'?(a.topicId+'_'+a.replyIndex):null) : [];
+
+  const historyHtml = history.length ? `
+    <div class="agreements-panel compact" style="margin-bottom:14px;">
+      <strong>On file for this email — ${history.length} prior action${history.length===1?'':'s'}:</strong>
+      ${history.map(h=>`
+        <div style="border-top:1px solid var(--line);margin-top:8px;padding-top:8px;">
+          <div style="font-size:11.5px;"><strong>Violation #${h.violationNumber}</strong> — ${new Date(h.timestamp).toLocaleDateString()} — ${escapeHtml(h.violationType)}${h.action ? ` (${h.action})` : ''}</div>
+          ${h.contextTitle ? `<div style="font-size:11px;color:var(--ink-soft);">On: ${escapeHtml(h.contextTitle)}</div>` : ''}
+          ${h.comments ? `<div style="font-size:11px;color:var(--ink-soft);font-style:italic;">"${escapeHtml(h.comments)}"</div>` : ''}
+        </div>
+      `).join('')}
+    </div>
+  ` : (a.email ? `<p style="font-size:12px;color:var(--ink-soft);margin:0 0 14px;">No prior actions on file for this email.</p>` : '');
+
+  const othersHtml = others.length ? `
+    <div class="agreements-panel compact" style="margin-bottom:14px;">
+      <strong>Other currently flagged content by this email (${others.length}):</strong>
+      ${others.map(o=>`
+        <div style="border-top:1px solid var(--line);margin-top:8px;padding-top:8px;font-size:11.5px;">
+          <strong>${o.kind==='reply' ? 'Reply' : 'Discussion'}:</strong> ${escapeHtml(o.title)}
+          <div style="color:var(--ink-soft);">"${escapeHtml(o.snippet).slice(0,140)}${o.snippet.length>140?'…':''}"</div>
+        </div>
+      `).join('')}
+    </div>
+  ` : '';
+
+  return `
+    <div class="thread-post">
+      <h2 style="font-size:19px;margin-bottom:12px;">${isBlock ? 'Block this email' : 'Delete for a violation'}</h2>
+      <div class="agreements-panel compact" style="margin-bottom:14px;">As moderator, you may take this action for a single flagrant violation at your own discretion — you don't need to wait for reports to accumulate first.</div>
+      ${a.contextTitle ? `<p style="font-size:12.5px;color:var(--ink-soft);margin:0 0 8px;">On: ${escapeHtml(a.contextTitle)}</p>` : ''}
+      ${a.content ? `<div style="background:var(--paper-dim);border-radius:var(--radius);padding:12px 14px;font-size:13.5px;white-space:pre-wrap;margin-bottom:14px;">${escapeHtml(a.content)}</div>` : ''}
+      <p style="font-size:12.5px;color:var(--ink-soft);margin:0 0 16px;">Author: ${escapeHtml(a.authorName||'—')} · Email: ${a.email ? escapeHtml(a.email) : '— none on file —'}</p>
+
+      ${historyHtml}
+      ${othersHtml}
+
+      <div class="field">
+        <label>Violation type</label>
+        <select id="modViolationType">
+          ${VIOLATION_TYPES.map(v=>`<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`).join('')}
+        </select>
+      </div>
+      <div class="field">
+        <label>Basis for this action</label>
+        <select id="modActionBasis">
+          ${ACTION_BASIS_OPTIONS.map(o=>`<option value="${o.value}" ${o.value===(a.suggestedBasis||'severe')?'selected':''}>${escapeHtml(o.label)}</option>`).join('')}
+        </select>
+      </div>
+      <div class="field">
+        <label>Additional comments / explanation <span style="text-transform:none;font-weight:400;">(optional — included in the on-file record and the printed PDF)</span></label>
+        <textarea id="modComments" placeholder="Anything you want on record about this decision..."></textarea>
+      </div>
+      ${!isBlock && a.email ? `
+      <div class="field">
+        <label style="font-size:12.5px;text-transform:none;font-weight:400;display:flex;align-items:center;gap:6px;">
+          <input type="checkbox" id="modBlockImmediately"> Also block this email immediately <span style="color:var(--ink-soft);">(bypasses the normal 2-strike rule — use for a severe, flagrant violation)</span>
+        </label>
+      </div>` : ''}
+      ${a.email ? `
+      <div class="field">
+        <label style="font-size:12.5px;text-transform:none;font-weight:400;display:flex;align-items:center;gap:6px;">
+          <input type="checkbox" id="modSendEmail"> Also open my email app to notify this person <span style="color:var(--ink-soft);">(optional — the action and PDF record are kept either way, so you're never required to send anything)</span>
+        </label>
+      </div>` : ''}
+      <p style="font-size:11.5px;color:var(--ink-soft);margin:0 0 14px;">Confirming will download a PDF record of this content and your decision, and ${isBlock ? 'block the email' : 'permanently delete the content'}. This record is kept on file regardless of whether you choose to notify the person, so you have it later if they ask what was removed and why.</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="new-topic-btn" id="modActionConfirm">${isBlock ? 'Confirm block' : 'Confirm delete'}</button>
+        <button class="report-btn" id="modActionCancel">Cancel</button>
+      </div>
+    </div>
   `;
 }
 
@@ -1212,11 +2058,11 @@ function renderModeration(){
     <div class="digest-row">
       <div class="digest-title">${escapeHtml(t.title)} ${t.hidden ? '<span class="badge official" style="background:var(--gold-soft);color:var(--gold-deep);">Hidden</span>' : ''}</div>
       <p style="font-size:13px;color:var(--ink-soft);margin:6px 0;">${escapeHtml(t.body).slice(0,160)}${t.body.length>160?'…':''}</p>
-      <p style="font-size:12px;color:var(--ink-soft);">Reports: ${t.flags||0} · Contact on file: ${t.contact_email ? escapeHtml(t.contact_email) : '—'} · Prior violations: ${violationCount(t.contact_email)}</p>
+      <p style="font-size:12px;color:var(--ink-soft);">Reports: ${t.flags||0} · Contact on file: ${(t.flags||0) >= CONFIG.flagThreshold ? (t.contact_email ? escapeHtml(t.contact_email) : '—') : `hidden until ${CONFIG.flagThreshold} reports`} · Prior violations: ${violationCount(t.contact_email)}</p>
       <div class="row" style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;">
         <button class="btn-primary" data-mod-restore-topic="${t.id}">Dismiss reports &amp; restore</button>
         <button class="new-topic-btn" data-mod-delete-topic="${t.id}">Delete permanently</button>
-        ${t.contact_email ? `<button class="report-btn" data-mod-block-email="${escapeHtml(t.contact_email)}">🚫 Block this email</button>` : ''}
+        ${t.contact_email ? `<button class="report-btn" data-mod-block-email="${escapeHtml(t.contact_email)}" data-mod-block-topic-id="${t.id}">🚫 Block this email</button>` : ''}
       </div>
     </div>
   `).join('');
@@ -1225,11 +2071,11 @@ function renderModeration(){
     <div class="digest-row">
       <div class="digest-title">Reply on: ${escapeHtml(topic.title)} ${reply.hidden ? '<span class="badge official" style="background:var(--gold-soft);color:var(--gold-deep);">Hidden</span>' : ''}</div>
       <p style="font-size:13px;color:var(--ink-soft);margin:6px 0;">"${escapeHtml(reply.body).slice(0,160)}${reply.body.length>160?'…':''}" — ${escapeHtml(reply.authorName)}</p>
-      <p style="font-size:12px;color:var(--ink-soft);">Reports: ${reply.flags||0} · Contact on file: ${reply.contactEmail ? escapeHtml(reply.contactEmail) : '—'} · Prior violations: ${violationCount(reply.contactEmail)}</p>
+      <p style="font-size:12px;color:var(--ink-soft);">Reports: ${reply.flags||0} · Contact on file: ${(reply.flags||0) >= CONFIG.flagThreshold ? (reply.contactEmail ? escapeHtml(reply.contactEmail) : '—') : `hidden until ${CONFIG.flagThreshold} reports`} · Prior violations: ${violationCount(reply.contactEmail)}</p>
       <div class="row" style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;">
         <button class="btn-primary" data-mod-restore-reply="${index}" data-topic-id="${topic.id}">Dismiss reports &amp; restore</button>
         <button class="new-topic-btn" data-mod-delete-reply="${index}" data-topic-id="${topic.id}">Delete permanently</button>
-        ${reply.contactEmail ? `<button class="report-btn" data-mod-block-email="${escapeHtml(reply.contactEmail)}">🚫 Block this email</button>` : ''}
+        ${reply.contactEmail ? `<button class="report-btn" data-mod-block-email="${escapeHtml(reply.contactEmail)}" data-mod-block-topic-id="${topic.id}" data-mod-block-reply-index="${index}">🚫 Block this email</button>` : ''}
       </div>
     </div>
   `).join('');
@@ -1242,7 +2088,7 @@ function renderModeration(){
   `).join('') || '<p style="color:var(--ink-soft);font-size:13.5px;">No blocked emails.</p>';
 
   return `
-    <div class="digest-note">Moderator view — flagged discussions and replies land here for review. Nothing here is visible to residents unless you restore it.</div>
+    <div class="digest-note">Moderator view — anything with at least one report lands here so you have early visibility, but it stays fully visible on the public site until it reaches ${CONFIG.flagThreshold} reports, at which point it auto-hides from residents. Once something is auto-hidden, it stays that way unless you restore it here. You can also act on a single flagrant violation immediately, from any discussion — you don't have to wait for reports to accumulate.</div>
     <h3 style="font-size:15px;margin-bottom:10px;">Flagged discussions</h3>
     ${topicRows || '<p style="color:var(--ink-soft);font-size:13.5px;margin-bottom:20px;">Nothing flagged right now.</p>'}
     <h3 style="font-size:15px;margin:24px 0 10px;">Flagged replies</h3>
@@ -1264,8 +2110,49 @@ function renderModeration(){
    EVENT HANDLING
 ===================================================================== */
 function attachHandlers(){
+  document.querySelectorAll('[data-md-wrap]').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      const ta = document.getElementById(el.getAttribute('data-md-wrap'));
+      if(!ta) return;
+      const before = el.getAttribute('data-md-before'), after = el.getAttribute('data-md-after');
+      const start = ta.selectionStart, end = ta.selectionEnd;
+      const selected = ta.value.slice(start, end) || 'text';
+      ta.value = ta.value.slice(0, start) + before + selected + after + ta.value.slice(end);
+      ta.focus();
+      ta.setSelectionRange(start + before.length, start + before.length + selected.length);
+    });
+  });
+  document.querySelectorAll('[data-md-link]').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      const ta = document.getElementById(el.getAttribute('data-md-link'));
+      if(!ta) return;
+      const start = ta.selectionStart, end = ta.selectionEnd;
+      const selected = ta.value.slice(start, end) || 'link text';
+      const snippet = `[${selected}](https://)`;
+      ta.value = ta.value.slice(0, start) + snippet + ta.value.slice(end);
+      ta.focus();
+      const urlPos = start + selected.length + 3;
+      ta.setSelectionRange(urlPos, urlPos + 8);
+    });
+  });
   document.querySelectorAll('[data-choose-role]').forEach(el=>{
-    el.addEventListener('click', ()=>{ chooseRole(el.getAttribute('data-choose-role')); });
+    el.addEventListener('click', ()=>{
+      const role = el.getAttribute('data-choose-role');
+      if(role === 'staff'){
+        const pass = prompt('Town management passphrase:');
+        if(pass !== CONFIG.officialPassphrase){ alert('That passphrase doesn\'t match — check with the town office.'); return; }
+      }
+      chooseRole(role);
+    });
+  });
+  document.querySelectorAll('[data-about-slide]').forEach(el=>{
+    el.addEventListener('click', ()=>{ aboutSlideIndex = parseInt(el.getAttribute('data-about-slide'),10); render(); });
+  });
+  document.querySelectorAll('[data-about-next]').forEach(el=>{
+    el.addEventListener('click', ()=>{ aboutSlideIndex = (aboutSlideIndex + 1) % ABOUT_SLIDES.length; render(); });
+  });
+  document.querySelectorAll('[data-about-prev]').forEach(el=>{
+    el.addEventListener('click', ()=>{ aboutSlideIndex = (aboutSlideIndex - 1 + ABOUT_SLIDES.length) % ABOUT_SLIDES.length; render(); });
   });
   document.querySelectorAll('.print-btn').forEach(el=>{
     el.addEventListener('click', ()=>window.print());
@@ -1313,7 +2200,7 @@ function attachHandlers(){
       const email = document.getElementById('pollVoteEmail').value.trim();
       if(!chosen){ alert('Pick an option before voting.'); return; }
       if(!isValidEmail(email)){ alert('Enter a valid email — it\'s only used to prevent duplicate votes and is never shown publicly.'); return; }
-      if(isBlocked(email)){ alert('This email address can\'t participate right now. If you think this is a mistake, contact the town office.'); return; }
+      if(isBlocked(email)){ alert('This email address can\'t participate right now. If you think this is a mistake, contact whoever moderates this site.'); return; }
       try{
         await castVote(t, email, parseInt(chosen.value,10));
       }catch(e){
@@ -1322,6 +2209,64 @@ function attachHandlers(){
         return;
       }
       render();
+    });
+  });
+
+  document.querySelectorAll('[data-sign-petition]').forEach(el=>{
+    el.addEventListener('click', async ()=>{
+      const id = el.getAttribute('data-sign-petition');
+      const name = document.getElementById('petitionSignName').value.trim();
+      const email = document.getElementById('petitionSignEmail').value.trim();
+      const address = document.getElementById('petitionSignAddress').value.trim();
+      const confirmedVoter = document.getElementById('petitionConfirmVoter').checked;
+      const confirmedPublic = document.getElementById('petitionConfirmPublic').checked;
+      if(!name){ alert('Please add your printed name.'); return; }
+      if(!isValidEmail(email)){ alert('Enter a valid email — it stays private and is only visible to the organizer.'); return; }
+      if(!address){ alert('Please add a street address — this is required for a petition and is never shown publicly.'); return; }
+      if(!confirmedPublic){ alert('Please check the box confirming you understand your name will be shown publicly before signing.'); return; }
+      if(isBlocked(email)){ alert('This email address can\'t participate right now. If you think this is a mistake, contact whoever moderates this site.'); return; }
+      try{
+        await signPetition(id, name, email, address, confirmedVoter);
+      }catch(e){
+        if(e.message === 'DUPLICATE') alert('This email has already signed this petition.');
+        else { console.error(e); alert('Could not record your signature — check your connection.'); }
+        return;
+      }
+      signedPetitions[id] = true; saveSignedPetitions();
+      const t = topics.find(x=>x.id===id);
+      if(t){
+        const entry = { kind:'signature', name, confirmedVoter, timestamp:new Date().toISOString() };
+        generatePetitionReceiptPdf(t, entry);
+      }
+      render();
+    });
+  });
+
+  document.querySelectorAll('[data-unlock-petition]').forEach(el=>{
+    el.addEventListener('click', async ()=>{
+      const id = el.getAttribute('data-unlock-petition');
+      const passcodeInput = document.getElementById('petitionPasscodeInput-'+id);
+      const passcode = passcodeInput ? passcodeInput.value.trim() : '';
+      if(!passcode){ alert('Enter the petition\'s passcode first.'); return; }
+      try{
+        const rows = await unlockPetition(id, passcode);
+        if(!rows.length && petitionSignerList(id).length > 0){
+          alert('That passcode didn\'t match — try again, or double check what was shown when the petition was created.');
+          return;
+        }
+        unlockedPetitionSigners[id] = rows;
+        render();
+      }catch(e){ console.error(e); alert('Could not check that passcode — check your connection.'); }
+    });
+  });
+
+  document.querySelectorAll('[data-print-petition]').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      const id = el.getAttribute('data-print-petition');
+      const t = topics.find(x=>x.id===id);
+      const rows = unlockedPetitionSigners[id];
+      if(!t || !rows) return;
+      generatePetitionPdf(t, rows);
     });
   });
 
@@ -1385,25 +2330,45 @@ function attachHandlers(){
     });
   });
 
-  const radios = document.querySelectorAll('input[name=authorType]');
-  radios.forEach(r=>r.addEventListener('change', ()=>{
-    document.getElementById('passphraseField').style.display =
-      document.querySelector('input[name=authorType]:checked').value === 'staff' ? 'block' : 'none';
-  }));
-
   const closeRadios = document.querySelectorAll('input[name=closeMode]');
   closeRadios.forEach(r=>r.addEventListener('change', ()=>{
     document.getElementById('closeDateField').style.display =
       document.querySelector('input[name=closeMode]:checked').value === 'date' ? 'block' : 'none';
   }));
 
+  const authorTypeRadios = document.querySelectorAll('input[name=authorType]');
+  authorTypeRadios.forEach(r=>r.addEventListener('change', ()=>{
+    const passField = document.getElementById('passphraseField');
+    if(passField) passField.style.display =
+      document.querySelector('input[name=authorType]:checked').value === 'staff' ? 'block' : 'none';
+  }));
+
+  const petitionTypeEl = document.getElementById('petitionType');
+  if(petitionTypeEl) petitionTypeEl.addEventListener('change', ()=>{
+    const val = petitionTypeEl.value;
+    const isBinding = val === 'binding_selectboard' || val === 'binding_school';
+    const isSpecial = val === 'special_meeting';
+    const isAdvisory = val === 'advisory_selectboard' || val === 'advisory_school';
+    document.getElementById('petitionMeetingDateField').style.display = isBinding ? 'block' : 'none';
+    document.getElementById('petitionMeetingDateLabel').textContent = isSpecial
+      ? 'Requested special meeting date (if known)'
+      : 'Meeting date this article targets (if known)';
+    document.getElementById('petitionBallotField').style.display = isAdvisory ? 'block' : 'none';
+  });
+
   const newResidencyEl = document.getElementById('newResidency');
   if(newResidencyEl) newResidencyEl.addEventListener('change', ()=>{
     document.getElementById('newResidencyOther').style.display = newResidencyEl.value === '__other__' ? 'block' : 'none';
+    const nonBethel = newResidencyEl.value !== 'Bethel';
+    document.getElementById('newBethelConnectionField').style.display = nonBethel ? 'block' : 'none';
+    document.getElementById('newPostPurposeField').style.display = nonBethel ? 'block' : 'none';
   });
   const replyResidencyEl = document.getElementById('replyResidency');
   if(replyResidencyEl) replyResidencyEl.addEventListener('change', ()=>{
     document.getElementById('replyResidencyOther').style.display = replyResidencyEl.value === '__other__' ? 'block' : 'none';
+    const nonBethel = replyResidencyEl.value !== 'Bethel';
+    document.getElementById('replyBethelConnection').style.display = nonBethel ? 'block' : 'none';
+    document.getElementById('replyPurpose').style.display = nonBethel ? 'block' : 'none';
   });
 
   const submitNew = document.getElementById('submitNewTopic');
@@ -1413,12 +2378,14 @@ function attachHandlers(){
     const category = document.getElementById('newCategory').value;
     const name = document.getElementById('newName').value.trim() || 'A resident';
     const email = document.getElementById('newEmail').value.trim();
-    const authorType = document.querySelector('input[name=authorType]:checked').value;
     const closeMode = document.querySelector('input[name=closeMode]:checked').value;
     const isPollSubmit = postKind === 'poll';
+    const isPetitionSubmit = postKind === 'petition';
+    const authorTypeEl = document.querySelector('input[name=authorType]:checked');
+    const authorType = authorTypeEl ? authorTypeEl.value : 'resident';
 
-    if(!title){ alert(isPollSubmit ? 'Please add a poll question.' : 'Please add a title and some details.'); return; }
-    if(!isPollSubmit && !body){ alert('Please add a title and some details.'); return; }
+    if(!title){ alert(isPollSubmit ? 'Please add a poll question.' : isPetitionSubmit ? 'Please add a short statement of what you\'re asking for.' : 'Please add a title and some details.'); return; }
+    if(!isPollSubmit && !body){ alert(isPetitionSubmit ? 'Please explain the ask — this is what prints on the petition.' : 'Please add a title and some details.'); return; }
 
     let pollPayload = null;
     if(isPollSubmit){
@@ -1428,7 +2395,7 @@ function attachHandlers(){
     }
 
     if(!isValidEmail(email)){ alert('Please add a valid email — it stays private and is only used if this post needs review.'); return; }
-    if(isBlocked(email)){ alert('This email address is not able to post here right now. If you think this is a mistake, contact the town office.'); return; }
+    if(isBlocked(email)){ alert('This email address is not able to post here right now. If you think this is a mistake, contact whoever moderates this site.'); return; }
     if(authorType === 'staff'){
       const pass = document.getElementById('newPassphrase').value;
       if(pass !== CONFIG.officialPassphrase){ alert('That passphrase doesn\'t match — check with the town office.'); return; }
@@ -1440,7 +2407,7 @@ function attachHandlers(){
       closesAt = new Date(dateVal + 'T23:59:59').toISOString();
     }
     if(containsProfanity(title+' '+body)){
-      if(!confirm('This looks like it might include language our filter flags. Post it anyway?')) return;
+      if(!await showProfanityModal()) return;
     }
     const wantsCopy = document.getElementById('newDownloadCopy').checked;
     const createdAt = new Date().toISOString();
@@ -1448,14 +2415,50 @@ function attachHandlers(){
     if(residency === '__other__'){
       residency = document.getElementById('newResidencyOther').value.trim() || 'Other';
     }
+    let bethelConnection = null, postPurpose = null;
+    if(residency !== 'Bethel'){
+      bethelConnection = document.getElementById('newBethelConnection').value;
+      postPurpose = document.getElementById('newPostPurpose').value.trim() || null;
+    }
+    let petitionType = null, petitionMeetingDate = null, petitionRequestBallot = false;
+    if(isPetitionSubmit){
+      petitionType = document.getElementById('petitionType').value;
+      const meetingDateVal = document.getElementById('petitionMeetingDate').value;
+      petitionMeetingDate = meetingDateVal ? new Date(meetingDateVal+'T00:00:00').toISOString() : null;
+      const ballotEl = document.getElementById('petitionRequestBallot');
+      petitionRequestBallot = ballotEl ? ballotEl.checked : false;
+      const isBinding = petitionType === 'binding_selectboard' || petitionType === 'binding_school';
+      if(isBinding && !meetingDateVal){
+        if(!confirm('No meeting date entered — the printed petition will show a blank for the meeting date until you fill it in later. Continue anyway?')) return;
+      }
+      const ackFinalSay = document.getElementById('petitionAckFinalSay');
+      if(!ackFinalSay || !ackFinalSay.checked){
+        alert('Please check the box confirming you understand the board (or town legal counsel) has final say over this article\'s wording and category before starting the petition.');
+        return;
+      }
+    }
+    const newId = uid();
+    const petitionPasscode = isPetitionSubmit ? genPasscode() : null;
     try{
       await createTopic({
-        id: uid(), title, body, category,
+        id: newId, title, body, category,
         author_type: authorType, author_name: name, contact_email: email,
         flags: 0, hidden: false, closes_at: closesAt, poll: pollPayload, residency: residency,
+        bethel_connection: bethelConnection, post_purpose: postPurpose,
+        is_petition: isPetitionSubmit,
+        petition_type: petitionType, petition_meeting_date: petitionMeetingDate, petition_request_ballot: petitionRequestBallot,
         reactions:{support:0,concern:0,idea:0}, replies:[]
       });
     }catch(e){ console.error(e); alert('Could not post that:\n\n' + e.message); return; }
+    if(isPetitionSubmit){
+      try{
+        await createPetitionRecord({ id:newId, title, description:body, category, creatorName:name, creatorEmail:email, passcode:petitionPasscode, closesAt });
+        alert(`Your petition passcode is:\n\n${petitionPasscode}\n\nSave this somewhere safe right now — it will not be shown again. You'll need it later to unlock the full supporter list (with emails and addresses) and print the organizer copy.`);
+      }catch(e){
+        console.error(e);
+        alert('Your petition posted, but its passcode could not be saved due to a connection issue. Without it, nobody will ever be able to unlock the full supporter list. Please contact whoever manages this site right away so they can help recover or reset this.');
+      }
+    }
     if(wantsCopy) downloadPostCopy({ title, category, authorName:name, authorType, createdAt, body, kind:'topic' });
     postKind = 'discussion'; newPollOptions = ['', ''];
     currentTab='home'; currentSort='new'; render();
@@ -1467,16 +2470,17 @@ function attachHandlers(){
     const name = document.getElementById('replyName').value.trim() || 'A resident';
     const email = document.getElementById('replyEmail').value.trim();
     const body = document.getElementById('replyBody').value.trim();
-    const asStaff = document.getElementById('replyAsStaff').checked;
+    const asStaffEl = document.getElementById('replyAsStaff');
+    const asStaff = asStaffEl ? asStaffEl.checked : false;
     if(!body) return;
     if(!isValidEmail(email)){ alert('Please add a valid email — it stays private and is only used if this reply needs review.'); return; }
-    if(isBlocked(email)){ alert('This email address is not able to post here right now. If you think this is a mistake, contact the town office.'); return; }
+    if(isBlocked(email)){ alert('This email address is not able to post here right now. If you think this is a mistake, contact whoever moderates this site.'); return; }
     if(asStaff){
       const pass = prompt('Town management passphrase:');
       if(pass !== CONFIG.officialPassphrase){ alert('Passphrase didn\'t match.'); return; }
     }
     if(containsProfanity(body)){
-      if(!confirm('This looks like it might include language our filter flags. Post it anyway?')) return;
+      if(!await showProfanityModal()) return;
     }
     const wantsCopy = document.getElementById('replyDownloadCopy').checked;
     const replyCreatedAt = Date.now();
@@ -1484,11 +2488,21 @@ function attachHandlers(){
     if(replyResidency === '__other__'){
       replyResidency = document.getElementById('replyResidencyOther').value.trim() || 'Other';
     }
-    t.replies.push({ authorName:name, authorType: asStaff?'staff':'resident', contactEmail: email, body, createdAt: replyCreatedAt, flags:0, hidden:false, residency: replyResidency });
+    let replyBethelConnection = null, replyPurposeVal = null;
+    if(replyResidency !== 'Bethel'){
+      replyBethelConnection = document.getElementById('replyBethelConnection').value;
+      replyPurposeVal = document.getElementById('replyPurpose').value.trim() || null;
+    }
+    const replyAuthorType = asStaff ? 'staff' : 'resident';
+    t.replies.push({ authorName:name, authorType:replyAuthorType, contactEmail: email, body, createdAt: replyCreatedAt, flags:0, hidden:false, residency: replyResidency, bethelConnection: replyBethelConnection, postPurpose: replyPurposeVal });
     let saveFailed = false;
     try{ await updateTopic(t.id, {replies: t.replies}); }
     catch(e){ console.error(e); alert('Could not save that reply — check your connection.'); t.replies.pop(); saveFailed = true; }
-    if(!saveFailed && wantsCopy) downloadPostCopy({ title:t.title, parentTitle:t.title, category:t.category, authorName:name, authorType: asStaff?'staff':'resident', createdAt: replyCreatedAt, body, kind:'reply' });
+    if(!saveFailed && t.is_petition){
+      const entry = { kind:'reply', name, body, timestamp:replyCreatedAt };
+      generatePetitionReceiptPdf(t, entry);
+    }
+    if(!saveFailed && wantsCopy) downloadPostCopy({ title:t.title, parentTitle:t.title, category:t.category, authorName:name, authorType:replyAuthorType, createdAt: replyCreatedAt, body, kind:'reply' });
     render();
   });
 
@@ -1532,18 +2546,11 @@ function attachHandlers(){
     });
   });
   document.querySelectorAll('[data-mod-delete-topic]').forEach(el=>{
-    el.addEventListener('click', async ()=>{
+    el.addEventListener('click', ()=>{
       const id = el.getAttribute('data-mod-delete-topic');
       const t = topics.find(x=>x.id===id);
-      if(!confirm('Delete this discussion permanently? This cannot be undone.')) return;
-      try{
-        const email = t ? t.contact_email : null;
-        await deleteTopic(id);
-        if(email){
-          const count = await recordViolation(email);
-          if(count >= 2) alert('This is that email\'s 2nd violation — it has been automatically blocked from posting further.');
-        }
-      }catch(e){ console.error(e); alert('Could not delete — check your connection.'); }
+      if(!t) return;
+      moderatorAction = { kind:'topic', id, contextTitle:t.title, content:t.body, authorName:t.author_name, email:t.contact_email, suggestedBasis: violationCount(t.contact_email)>0 ? 'multiple' : 'severe' };
       render();
     });
   });
@@ -1559,21 +2566,32 @@ function attachHandlers(){
     });
   });
   document.querySelectorAll('[data-mod-delete-reply]').forEach(el=>{
-    el.addEventListener('click', async ()=>{
+    el.addEventListener('click', ()=>{
       const idx = parseInt(el.getAttribute('data-mod-delete-reply'),10);
       const tid = el.getAttribute('data-topic-id');
       const t = topics.find(x=>x.id===tid);
       if(!t || !t.replies[idx]) return;
-      if(!confirm('Delete this reply permanently? This cannot be undone.')) return;
-      const email = t.replies[idx].contactEmail;
-      t.replies.splice(idx,1);
-      try{
-        await updateTopic(tid, {replies: t.replies});
-        if(email){
-          const count = await recordViolation(email);
-          if(count >= 2) alert('This is that email\'s 2nd violation — it has been automatically blocked from posting further.');
-        }
-      }catch(e){ console.error(e); }
+      moderatorAction = { kind:'reply', topicId:tid, replyIndex:idx, contextTitle:t.title, content:t.replies[idx].body, authorName:t.replies[idx].authorName, email:t.replies[idx].contactEmail, suggestedBasis: violationCount(t.replies[idx].contactEmail)>0 ? 'multiple' : 'severe' };
+      render();
+    });
+  });
+
+  document.querySelectorAll('[data-mod-instant-delete-topic]').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      const id = el.getAttribute('data-mod-instant-delete-topic');
+      const t = topics.find(x=>x.id===id);
+      if(!t) return;
+      moderatorAction = { kind:'topic', id, contextTitle:t.title, content:t.body, authorName:t.author_name, email:t.contact_email, suggestedBasis:'instant' };
+      render();
+    });
+  });
+  document.querySelectorAll('[data-mod-instant-delete-reply]').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      const idx = parseInt(el.getAttribute('data-mod-instant-delete-reply'),10);
+      const tid = el.getAttribute('data-id');
+      const t = topics.find(x=>x.id===tid);
+      if(!t || !t.replies[idx]) return;
+      moderatorAction = { kind:'reply', topicId:tid, replyIndex:idx, contextTitle:t.title, content:t.replies[idx].body, authorName:t.replies[idx].authorName, email:t.replies[idx].contactEmail, suggestedBasis:'instant' };
       render();
     });
   });
@@ -1609,6 +2627,7 @@ function attachHandlers(){
       if(!t) return;
       if(!ownerCheck(t.contact_email)){ alert("That email doesn't match what this was posted with."); return; }
       if(!confirm('Delete this discussion permanently? This cannot be undone.')) return;
+      generateDeletedDiscussionPdf(t);
       try{ await deleteTopic(id); }catch(e){ console.error(e); alert('Could not delete — check your connection.'); return; }
       currentTopicId = null; currentTab = 'home'; render();
     });
@@ -1648,6 +2667,8 @@ function attachHandlers(){
       if(!t || !t.replies[idx]) return;
       if(!ownerCheck(t.replies[idx].contactEmail)){ alert("That email doesn't match what this was posted with."); return; }
       if(!confirm('Delete this reply permanently? This cannot be undone.')) return;
+      const r = t.replies[idx];
+      downloadPostCopy({ title:t.title, parentTitle:t.title, category:t.category, authorName:r.authorName, authorType:r.authorType, createdAt:r.createdAt, body:r.body, kind:'reply' });
       t.replies.splice(idx,1);
       try{ await updateTopic(tid, {replies: t.replies}); }
       catch(e){ console.error(e); alert('Could not delete — check your connection.'); return; }
@@ -1656,11 +2677,19 @@ function attachHandlers(){
   });
 
   document.querySelectorAll('[data-mod-block-email]').forEach(el=>{
-    el.addEventListener('click', async ()=>{
+    el.addEventListener('click', ()=>{
       const email = el.getAttribute('data-mod-block-email');
-      if(!confirm(`Block ${email} from posting further topics or replies?`)) return;
-      try{ await blockEmail(email, 'blocked from flagged content review'); }
-      catch(e){ console.error(e); alert('Could not block — check your connection.'); return; }
+      const topicId = el.getAttribute('data-mod-block-topic-id');
+      const replyIndex = el.getAttribute('data-mod-block-reply-index');
+      const t = topicId ? topics.find(x=>x.id===topicId) : null;
+      if(replyIndex !== null && t && t.replies[parseInt(replyIndex,10)]){
+        const r = t.replies[parseInt(replyIndex,10)];
+        moderatorAction = { kind:'block', email, contextTitle:t.title, content:r.body, authorName:r.authorName, suggestedBasis: violationCount(email)>0 ? 'multiple' : 'severe' };
+      } else if(t){
+        moderatorAction = { kind:'block', email, contextTitle:t.title, content:t.body, authorName:t.author_name, suggestedBasis: violationCount(email)>0 ? 'multiple' : 'severe' };
+      } else {
+        moderatorAction = { kind:'block', email, contextTitle:null, content:null, authorName:null, suggestedBasis: violationCount(email)>0 ? 'multiple' : 'severe' };
+      }
       render();
     });
   });
@@ -1680,6 +2709,58 @@ function attachHandlers(){
       render();
     });
   });
+
+  const modCancel = document.getElementById('modActionCancel');
+  if(modCancel) modCancel.addEventListener('click', ()=>{ moderatorAction = null; render(); });
+
+  const modConfirm = document.getElementById('modActionConfirm');
+  if(modConfirm) modConfirm.addEventListener('click', async ()=>{
+    const a = moderatorAction;
+    if(!a) return;
+    const violationType = document.getElementById('modViolationType').value;
+    const actionBasisValue = document.getElementById('modActionBasis').value;
+    const actionBasisLabel = (ACTION_BASIS_OPTIONS.find(o=>o.value===actionBasisValue)||{}).label || actionBasisValue;
+    const comments = document.getElementById('modComments').value.trim();
+    const blockImmediatelyEl = document.getElementById('modBlockImmediately');
+    const blockImmediately = blockImmediatelyEl ? blockImmediatelyEl.checked : false;
+    const sendEmailEl = document.getElementById('modSendEmail');
+    const sendEmail = sendEmailEl ? sendEmailEl.checked : false;
+    const actionLabel = a.kind === 'block' ? 'Email blocked' : 'Content deleted';
+
+    let violationNumber = null;
+    if(a.email){
+      violationNumber = await recordViolationDetailed(a.email, {
+        contextTitle: a.contextTitle, content: a.content, authorName: a.authorName,
+        violationType, actionBasis: actionBasisLabel, comments, action: actionLabel
+      });
+    }
+
+    generateViolationRecordPdf({
+      contextTitle: a.contextTitle, content: a.content, authorName: a.authorName,
+      email: a.email, violationType, actionBasisLabel, violationNumber, comments, actionLabel
+    });
+
+    try{
+      if(a.kind === 'topic'){
+        await deleteTopic(a.id);
+      } else if(a.kind === 'reply'){
+        const t = topics.find(x=>x.id===a.topicId);
+        if(t && t.replies[a.replyIndex]){
+          t.replies.splice(a.replyIndex,1);
+          await updateTopic(a.topicId, {replies: t.replies});
+        }
+      }
+      if(a.email && (a.kind === 'block' || blockImmediately || (violationNumber && violationNumber >= 2))){
+        await blockEmail(a.email, `${violationType} — ${actionBasisLabel}${comments ? ' — ' + comments : ''}`);
+      }
+    }catch(e){ console.error(e); alert('Something went wrong completing this action — check your connection. The PDF and on-file record were still saved.'); }
+
+    if(sendEmail && a.email) openModeratorMailto(a.email, a.contextTitle);
+    moderatorAction = null;
+    currentTab = 'moderate';
+    currentTopicId = null;
+    render();
+  });
 }
 
 /* =====================================================================
@@ -1688,11 +2769,7 @@ function attachHandlers(){
 document.querySelectorAll('nav.tabs button').forEach(btn=>{
   btn.addEventListener('click', ()=>{
     const tab = btn.getAttribute('data-tab');
-    if(tab === 'moderate' && !isModerator){
-      const pass = prompt('Moderator passphrase:');
-      if(pass !== CONFIG.moderatorPassphrase){ alert('That passphrase doesn\'t match.'); return; }
-      isModerator = true;
-    }
+    if(tab === 'about'){ goToAbout(); return; }
     document.querySelectorAll('nav.tabs button').forEach(b=>b.classList.remove('active'));
     btn.classList.add('active');
     currentTab = tab;
@@ -1700,17 +2777,26 @@ document.querySelectorAll('nav.tabs button').forEach(btn=>{
     render();
   });
 });
+const moderateTabBtn = document.getElementById('moderateTabBtn');
+if(moderateTabBtn) moderateTabBtn.addEventListener('click', ()=>{
+  if(!isModerator){
+    const pass = prompt('Moderator passphrase:');
+    if(pass !== CONFIG.moderatorPassphrase){ alert('That passphrase doesn\'t match.'); return; }
+    isModerator = true;
+  }
+  document.querySelectorAll('nav.tabs button').forEach(b=>b.classList.remove('active'));
+  currentTab = 'moderate';
+  currentTopicId = null;
+  render();
+});
 
 function updateViewerLabel(){
   document.getElementById('viewerLabel').textContent = 'Viewing as ' + (ROLE_LABELS[viewerRole] || 'Resident');
 }
-function updateModerateTabVisibility(){
-  const btn = document.getElementById('moderateTabBtn');
-  if(btn) btn.style.display = viewerRole === 'staff' ? '' : 'none';
-}
 function goToAbout(){
   currentTopicId = null;
   currentTab = 'about';
+  aboutSlideIndex = 0;
   document.querySelectorAll('nav.tabs button').forEach(b=>b.classList.remove('active'));
   render();
 }
@@ -1718,7 +2804,6 @@ function chooseRole(role){
   viewerRole = role;
   localStorage.setItem('tc-role', viewerRole);
   updateViewerLabel();
-  updateModerateTabVisibility();
   currentTab = 'home';
   document.querySelectorAll('nav.tabs button').forEach(b=>b.classList.remove('active'));
   const homeBtn = document.querySelector('nav.tabs button[data-tab="home"]');
@@ -1727,7 +2812,31 @@ function chooseRole(role){
 }
 document.getElementById('changeRoleBtn').addEventListener('click', goToAbout);
 document.getElementById('townTitle').addEventListener('click', goToAbout);
-document.getElementById('aboutLink').addEventListener('click', goToAbout);
+
+// Profanity warning modal (replaces a plain confirm() so it can include a real link to the agreements)
+let profanityModalResolve = null;
+function showProfanityModal(){
+  document.getElementById('profanityModalOverlay').style.display = 'flex';
+  return new Promise(resolve=>{ profanityModalResolve = resolve; });
+}
+function closeProfanityModal(result){
+  document.getElementById('profanityModalOverlay').style.display = 'none';
+  if(profanityModalResolve) profanityModalResolve(result);
+  profanityModalResolve = null;
+}
+document.getElementById('profanityModalCancel').addEventListener('click', ()=>closeProfanityModal(false));
+document.getElementById('profanityModalProceed').addEventListener('click', ()=>closeProfanityModal(true));
+document.getElementById('profanityModalAgreementsLink').addEventListener('click', ()=>{
+  closeProfanityModal(false); // treat as cancel — let them re-check their post against the agreements before resubmitting
+  currentTab = 'home';
+  currentTopicId = null;
+  compactReminderOpen = false; // renderAgreements(false) on the home tab always shows the full text regardless
+  document.querySelectorAll('nav.tabs button').forEach(b=>b.classList.remove('active'));
+  const homeBtn = document.querySelector('nav.tabs button[data-tab="home"]');
+  if(homeBtn) homeBtn.classList.add('active');
+  render();
+  window.scrollTo(0,0);
+});
 
 /* =====================================================================
    INIT
@@ -1749,17 +2858,12 @@ document.getElementById('searchBtn').addEventListener('click', ()=>{
 });
 
 (async function init(){
-  const isFirstVisit = !viewerRole;
   if(!viewerRole) viewerRole = 'resident';
   updateViewerLabel();
-  updateModerateTabVisibility();
   await loadTopics();
   await loadBlockedEmails();
   await loadViolations();
-  if(isFirstVisit){
-    currentTab = 'about';
-    document.querySelectorAll('nav.tabs button').forEach(b=>b.classList.remove('active'));
-  }
+  await loadPetitionSigners();
   render();
 })();
 </script>
