@@ -381,6 +381,7 @@
         <input type="text" id="searchInput" placeholder="Search discussions...">
         <button id="searchBtn" aria-label="Search">🔎</button>
       </div>
+      <button id="contactBtn" title="Contact the moderator" style="background:none;border:1px solid rgba(255,255,255,.28);color:var(--paper);opacity:.7;font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;padding:5px 9px;border-radius:2px;white-space:nowrap;">✉️ Contact</button>
       <button id="moderateTabBtn" title="Moderator access" style="background:none;border:1px solid rgba(255,255,255,.28);color:var(--paper);opacity:.6;font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;padding:5px 9px;border-radius:2px;white-space:nowrap;">Moderate</button>
     </div>
   </div>
@@ -403,6 +404,19 @@
 
 <div class="print-page-heading" id="printPageHeading">Bethel Town Common</div>
 <main class="shell" id="app"></main>
+<div id="contactModalOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:1000;align-items:center;justify-content:center;">
+  <div style="background:#fff;max-width:420px;width:90%;margin:auto;border-radius:var(--radius, 8px);padding:20px;font-family:inherit;">
+    <h3 style="margin:0 0 8px;font-size:17px;color:var(--pine);">Leave a message</h3>
+    <p style="margin:0 0 12px;font-size:13px;color:var(--ink-soft);">Have something to say directly to whoever runs this site — a question, a concern, or something that doesn't belong in a public post? Send it here. It goes straight to the moderator team, not posted publicly.</p>
+    <textarea id="contactMessageText" placeholder="What's on your mind?" style="width:100%;min-height:100px;margin-bottom:8px;border:1px solid var(--line);border-radius:var(--radius);padding:8px 10px;font-family:inherit;font-size:13px;box-sizing:border-box;"></textarea>
+    <input type="text" id="contactMessageEmail" placeholder="Your email (only if you'd like a reply)" style="width:100%;margin-bottom:12px;border:1px solid var(--line);border-radius:var(--radius);padding:8px 10px;font-family:inherit;font-size:13px;box-sizing:border-box;">
+    <div id="contactMessageSentNote" style="display:none;font-size:13px;color:var(--pine);margin-bottom:10px;">Sent — thanks for reaching out.</div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;">
+      <button type="button" class="report-btn" id="contactModalCancel">Close</button>
+      <button type="button" class="btn-primary" id="contactModalSend">Send message</button>
+    </div>
+  </div>
+</div>
 <div id="profanityModalOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:1000;align-items:center;justify-content:center;">
   <div style="background:#fff;max-width:420px;width:90%;margin:auto;border-radius:var(--radius, 8px);padding:20px;font-family:inherit;">
     <p style="margin:0 0 10px;font-size:14px;">This looks like it might include language our filter flags.</p>
@@ -467,6 +481,23 @@ function openSectionFPdf(){
 // generated PDF, with a thin divider underneath. Returns the y position to continue drawing from.
 // jsPDF only ships Helvetica/Times/Courier, so this uses Times-Bold as the closest built-in
 // approximation of the site's period display font rather than the exact custom webfont.
+// Sends a PDF as an email attachment through the site's Edge Function, instead of a local download.
+// Returns true/false so callers can decide whether to warn the user if it failed.
+async function sendPdfEmail(doc, toEmail, subject, htmlBody, filename){
+  if(!toEmail) return false;
+  try{
+    const dataUri = doc.output('datauristring');
+    const base64 = dataUri.split(',')[1];
+    const res = await fetch(`${CONFIG.supabaseUrl}/functions/v1/send-email`, {
+      method:'POST',
+      headers:{ 'Content-Type':'application/json', 'apikey': CONFIG.supabaseKey, 'Authorization': `Bearer ${CONFIG.supabaseKey}` },
+      body: JSON.stringify({ to: toEmail, subject, html: htmlBody, attachmentBase64: base64, attachmentFilename: filename })
+    });
+    if(!res.ok) throw new Error('email send failed: '+res.status);
+    return true;
+  }catch(e){ console.error('could not send PDF email', e); return false; }
+}
+
 function drawPdfHeading(doc){
   const pageWidth = doc.internal.pageSize.getWidth();
   let y = 46;
@@ -481,7 +512,7 @@ function drawPdfHeading(doc){
   return y + 28;
 }
 
-function downloadPostCopy({ title, category, authorName, authorType, createdAt, body, kind, parentTitle }){
+async function downloadPostCopy({ title, category, authorName, authorType, createdAt, body, kind, parentTitle, emailTo }){
   try{
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF({ unit:'pt', format:'letter' });
@@ -514,7 +545,17 @@ function downloadPostCopy({ title, category, authorName, authorType, createdAt, 
     doc.text(footer, marginX, y);
 
     const slug = (kind==='reply' ? parentTitle : title).toLowerCase().replace(/[^a-z0-9]+/g,'-').slice(0,40).replace(/(^-|-$)/g,'');
-    doc.save(`bethel-common-${kind}-copy-${slug || 'post'}.pdf`);
+    if(emailTo){
+      const sent = await sendPdfEmail(
+        doc, emailTo,
+        `Your deleted reply on: ${parentTitle}`,
+        `<p>You deleted your reply on "${escapeHtml(parentTitle)}" on Bethel Town Common. A copy is attached for your records.</p>`,
+        `bethel-common-${kind}-copy-${slug || 'post'}.pdf`
+      );
+      if(!sent) alert('The reply was deleted, but the email copy could not be sent — check your connection.');
+    } else {
+      doc.save(`bethel-common-${kind}-copy-${slug || 'post'}.pdf`);
+    }
   }catch(e){ console.error('could not generate PDF copy', e); alert('Your post was saved, but the PDF copy could not be generated.'); }
 }
 
@@ -522,7 +563,7 @@ function downloadPostCopy({ title, category, authorName, authorType, createdAt, 
 // so the conversation isn't lost with no record. Downloads automatically — no checkbox,
 // same reasoning as the moderator violation-record PDF: a safety net people forget to
 // opt into isn't much of a safety net.
-function generateDeletedDiscussionPdf(t){
+async function generateDeletedDiscussionPdf(t){
   try{
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF({ unit:'pt', format:'letter' });
@@ -573,7 +614,13 @@ function generateDeletedDiscussionPdf(t){
     doc.text(footer, marginX, y);
 
     const slug = t.title.toLowerCase().replace(/[^a-z0-9]+/g,'-').slice(0,40).replace(/(^-|-$)/g,'');
-    doc.save(`bethel-common-deleted-discussion-${slug || 'post'}.pdf`);
+    const sent = await sendPdfEmail(
+      doc, t.contact_email,
+      `Your deleted post: ${t.title}`,
+      `<p>You deleted your post "${escapeHtml(t.title)}" on Bethel Town Common. A copy of the full discussion, including any replies, is attached for your records.</p>`,
+      `bethel-common-deleted-discussion-${slug || 'post'}.pdf`
+    );
+    if(!sent) alert('The discussion was deleted, but the email copy could not be sent — check your connection.');
   }catch(e){ console.error('could not generate deletion archive PDF', e); alert('The discussion was deleted, but an archive PDF could not be generated.'); }
 }
 
@@ -625,7 +672,7 @@ const PETITION_TYPE_LABELS = {
 // Generates a PDF record of a moderator's deletion or block action: the content at time of
 // removal, the author/email, the violation type and comments picked in the moderator form, and
 // blank ruled lines for a written explanation or response.
-function generateViolationRecordPdf({ contextTitle, content, authorName, email, violationType, actionBasisLabel, violationNumber, comments, actionLabel }){
+async function generateViolationRecordPdf({ contextTitle, content, authorName, email, violationType, actionBasisLabel, violationNumber, comments, actionLabel }){
   try{
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF({ unit:'pt', format:'letter' });
@@ -676,7 +723,17 @@ function generateViolationRecordPdf({ contextTitle, content, authorName, email, 
     }
 
     const slug = (contextTitle||'record').toLowerCase().replace(/[^a-z0-9]+/g,'-').slice(0,40).replace(/(^-|-$)/g,'');
-    doc.save(`bethel-common-moderation-${slug || 'record'}.pdf`);
+    if(actionLabel === 'Content deleted' && email){
+      const sent = await sendPdfEmail(
+        doc, email,
+        'Your post was removed from Bethel Town Common',
+        `<p>A post or reply of yours was removed by a moderator${contextTitle ? ' from "' + escapeHtml(contextTitle) + '"' : ''}. The attached record explains the basis for that decision. If you think this was made in error, you're welcome to leave a message using the Contact form on the site.</p>`,
+        `bethel-common-moderation-${slug || 'record'}.pdf`
+      );
+      if(!sent) doc.save(`bethel-common-moderation-${slug || 'record'}.pdf`); // fall back to a local copy if the email failed, so the record isn't lost
+    } else {
+      doc.save(`bethel-common-moderation-${slug || 'record'}.pdf`);
+    }
   }catch(e){ console.error('could not generate violation record PDF', e); alert('Could not generate the record PDF.'); }
 }
 
@@ -891,12 +948,13 @@ const AGREEMENT_ITEMS = [
   { id:'violation', label:'What counts as a violation', detail:"A violation of these agreements includes personal, impertinent, threatening, or profane remarks, or content aimed at an individual rather than the topic at hand. Harassment or threats aren't tolerated." },
   { id:'reporting', label:'Reporting', detail:'Anyone reading this forum — not just those posting — can report a violation they see. It takes 3 separate reports, not just one person, before a post is pulled from public view and escalated for a moderator to review.' },
   { id:'consequences', label:'Consequences', detail:'If your content is removed for a violation, that alone will not necessarily stop you from posting again — but a second removal will block your email from posting further. The moderator may act on a single flagrant violation immediately and at their own discretion — removing the content and/or blocking the email — without waiting for reports to accumulate first. A copy of exactly what you posted, plus the moderator\'s stated reason for removing it, is kept on file — you can request a copy of that record at any time.' },
-  { id:'privacy', label:'Privacy', detail:'Posting here is anonymous by design — choose any display name you like so you can give honest opinions. A private email is required to post, but it is never shown publicly. It is only seen by a moderator if a post is flagged and escalated for review. <strong>The one exception is petitions:</strong> starting or signing a petition is not anonymous — organizers and signers are identified by their legal name, since that\'s how petitions work in practice and what gives them credibility.' }
+  { id:'privacy', label:'Privacy', detail:'Posting here is anonymous by design — choose any display name you like so you can give honest opinions. A private email is required to post, but it is never shown publicly. It is only seen by a moderator if a post is flagged and escalated for review. It\'s also used to send you a copy if you ever delete your own post or reply — that\'s an automated copy for your records, not a moderator seeing it. <strong>The one exception is petitions:</strong> starting or signing a petition is not anonymous — organizers and signers are identified by their legal name, since that\'s how petitions work in practice and what gives them credibility.' }
 ];
 let compactReminderOpen = false;
 function saveVotedPolls(){ localStorage.setItem('tc-voted-polls', JSON.stringify(votedPolls)); }
 let blockedEmails = new Set();
 let violations = {}; // email -> { count, history: [ {contextTitle, content, authorName, violationType, actionBasis, comments, action, violationNumber, timestamp} ] }
+let contactMessages = [];
 
 const ROLE_LABELS = { resident:'Community Member', staff:'Town Staff', board:'Select Board Member' };
 
@@ -1118,6 +1176,34 @@ async function loadViolations(){
     violations = {};
     rows.forEach(r=>{ violations[r.email] = { count: r.count, history: r.history || [] }; });
   }catch(e){ console.error('email_violations load error', e); }
+}
+function generateContactMessagePdf(m){
+  try{
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ unit:'pt', format:'letter' });
+    const marginX = 54; let y = drawPdfHeading(doc);
+    const maxWidth = doc.internal.pageSize.getWidth() - marginX*2;
+
+    doc.setFont('helvetica','bold'); doc.setFontSize(14);
+    doc.text('Contact form message', marginX, y); y += 22;
+
+    doc.setFont('helvetica','italic'); doc.setFontSize(10);
+    doc.text(`${m.reply_email ? 'Reply to: ' + m.reply_email : 'No reply requested'} · ${new Date(m.created_at).toLocaleString()}`, marginX, y); y += 24;
+
+    doc.setFont('helvetica','normal'); doc.setFontSize(11);
+    const lines = doc.splitTextToSize(m.message, maxWidth);
+    lines.forEach(line=>{ doc.text(line, marginX, y); y += 15; });
+
+    doc.save(`bethel-common-message-${new Date(m.created_at).toISOString().slice(0,10)}.pdf`);
+  }catch(e){ console.error('could not generate message PDF', e); alert('Could not generate the PDF.'); }
+}
+
+async function loadContactMessages(){
+  try{
+    const res = await fetch(sbUrl('contact_messages?select=*&order=created_at.desc'), { headers: SB_HEADERS });
+    if(!res.ok) throw new Error('GET contact_messages failed: '+res.status);
+    contactMessages = await res.json();
+  }catch(e){ console.error('contact_messages load error', e); }
 }
 function violationCount(email){
   const v = violations[(email||'').trim().toLowerCase()];
@@ -1748,7 +1834,7 @@ function renderThread(id){
     <div class="reply-form">
       ${renderAgreements(true)}
       <input type="text" id="replyName" placeholder="${t.is_petition ? 'Your legal name — replies on petitions are not anonymous' : "Your name (or 'Neighbor on Elm St')"}" style="width:100%;margin-bottom:8px;">
-      <input type="text" id="replyEmail" placeholder="${t.is_petition ? 'Your email (stays private — your name above is public, since replies on petitions are not anonymous)' : 'Your email (kept private — only used if flagged for violating the community agreements)'}" style="width:100%;margin-bottom:8px;">
+      <input type="text" id="replyEmail" placeholder="${t.is_petition ? 'Your email (stays private — your name above is public, since replies on petitions are not anonymous)' : 'Your email (kept private — only used if flagged for violating the community agreements, or to send you a copy if you delete this reply)'}" style="width:100%;margin-bottom:8px;">
       <select id="replyResidency" style="width:100%;margin-bottom:6px;border:1px solid var(--line);border-radius:var(--radius);padding:8px 10px;font-family:inherit;font-size:13px;background:#fff;">
         <option value="Bethel">Bethel resident</option>
         ${CONFIG.neighboringTowns.map(t=>`<option value="${t}">${t} resident</option>`).join('')}
@@ -1904,7 +1990,7 @@ function renderNewTopicForm(){
         <input type="text" id="newName" placeholder="${isPetition ? 'Your legal name, as it should appear publicly' : "How you'd like to appear"}">
       </div>
       <div class="field">
-        <label>Your email <span style="text-transform:none;font-weight:400;">${isPetition ? '— stays private, never shown publicly. Note: unlike regular discussions, petitions are not anonymous — your legal name (not this email) is shown publicly as the organizer, and the same applies to anyone who replies here.' : '— kept private, only used if a post is flagged for violating the community agreements'}</span></label>
+        <label>Your email <span style="text-transform:none;font-weight:400;">${isPetition ? '— stays private, never shown publicly. Note: unlike regular discussions, petitions are not anonymous — your legal name (not this email) is shown publicly as the organizer, and the same applies to anyone who replies here.' : '— kept private, only used if a post is flagged for violating the community agreements, or to send you a copy if you delete it'}</span></label>
         <input type="text" id="newEmail" placeholder="you@example.com">
       </div>
       ${!isPetition ? `
@@ -2153,7 +2239,21 @@ function renderModeration(){
     </div>
   `).join('') || '<p style="color:var(--ink-soft);font-size:13.5px;">No blocked emails.</p>';
 
+  const messageRows = contactMessages.map(m=>`
+    <div class="digest-row">
+      <p style="font-size:13.5px;margin:0 0 6px;white-space:pre-wrap;">${escapeHtml(m.message)}</p>
+      <p style="font-size:12px;color:var(--ink-soft);">${m.reply_email ? `Reply to: ${escapeHtml(m.reply_email)}` : 'No reply requested'} · ${timeAgo(m.created_at)}</p>
+      <div class="row" style="display:flex;gap:8px;margin-top:8px;">
+        <button class="report-btn" data-mod-pdf-contact-message="${m.id}">📄 Download PDF</button>
+        <button class="report-btn" data-mod-delete-contact-message="${m.id}">Mark read &amp; delete</button>
+      </div>
+    </div>
+  `).join('') || '<p style="color:var(--ink-soft);font-size:13.5px;margin-bottom:20px;">No messages right now.</p>';
+
   return `
+    <h3 style="font-size:15px;margin-bottom:10px;">Messages from the Contact form</h3>
+    ${messageRows}
+
     <div class="digest-note">Moderator view — anything with at least one report lands here so you have early visibility, but it stays fully visible on the public site until it reaches ${CONFIG.flagThreshold} reports, at which point it auto-hides from residents. Once something is auto-hidden, it stays that way unless you restore it here. You can also act on a single flagrant violation immediately, from any discussion — you don't have to wait for reports to accumulate.</div>
     <h3 style="font-size:15px;margin-bottom:10px;">Flagged discussions</h3>
     ${topicRows || '<p style="color:var(--ink-soft);font-size:13.5px;margin-bottom:20px;">Nothing flagged right now.</p>'}
@@ -2695,7 +2795,7 @@ function attachHandlers(){
       if(!t) return;
       if(!ownerCheck(t.contact_email)){ alert("That email doesn't match what this was posted with."); return; }
       if(!confirm('Delete this discussion permanently? This cannot be undone.')) return;
-      generateDeletedDiscussionPdf(t);
+      await generateDeletedDiscussionPdf(t);
       try{ await deleteTopic(id); }catch(e){ console.error(e); alert('Could not delete — check your connection.'); return; }
       currentTopicId = null; currentTab = 'home'; render();
     });
@@ -2736,7 +2836,7 @@ function attachHandlers(){
       if(!ownerCheck(t.replies[idx].contactEmail)){ alert("That email doesn't match what this was posted with."); return; }
       if(!confirm('Delete this reply permanently? This cannot be undone.')) return;
       const r = t.replies[idx];
-      downloadPostCopy({ title:t.title, parentTitle:t.title, category:t.category, authorName:r.authorName, authorType:r.authorType, createdAt:r.createdAt, body:r.body, kind:'reply' });
+      await downloadPostCopy({ title:t.title, parentTitle:t.title, category:t.category, authorName:r.authorName, authorType:r.authorType, createdAt:r.createdAt, body:r.body, kind:'reply', emailTo:r.contactEmail });
       t.replies.splice(idx,1);
       try{ await updateTopic(tid, {replies: t.replies}); }
       catch(e){ console.error(e); alert('Could not delete — check your connection.'); return; }
@@ -2778,6 +2878,26 @@ function attachHandlers(){
     });
   });
 
+  document.querySelectorAll('[data-mod-pdf-contact-message]').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      const id = el.getAttribute('data-mod-pdf-contact-message');
+      const m = contactMessages.find(x=>x.id === id);
+      if(m) generateContactMessagePdf(m);
+    });
+  });
+
+  document.querySelectorAll('[data-mod-delete-contact-message]').forEach(el=>{
+    el.addEventListener('click', async ()=>{
+      const id = el.getAttribute('data-mod-delete-contact-message');
+      try{
+        const res = await fetch(sbUrl(`contact_messages?id=eq.${id}`), { method:'DELETE', headers: SB_HEADERS });
+        if(!res.ok) throw new Error('delete failed: '+res.status);
+        contactMessages = contactMessages.filter(m=>m.id !== id);
+      }catch(e){ console.error(e); alert('Could not delete — check your connection.'); return; }
+      render();
+    });
+  });
+
   const modCancel = document.getElementById('modActionCancel');
   if(modCancel) modCancel.addEventListener('click', ()=>{ moderatorAction = null; render(); });
 
@@ -2803,7 +2923,7 @@ function attachHandlers(){
       });
     }
 
-    generateViolationRecordPdf({
+    await generateViolationRecordPdf({
       contextTitle: a.contextTitle, content: a.content, authorName: a.authorName,
       email: a.email, violationType, actionBasisLabel, violationNumber, comments, actionLabel
     });
@@ -2881,6 +3001,36 @@ function chooseRole(role){
 document.getElementById('changeRoleBtn').addEventListener('click', goToAbout);
 document.getElementById('townTitle').addEventListener('click', goToAbout);
 
+// Contact form — stores directly in Supabase, visible in the Moderate tab (no email involved)
+const contactBtnEl = document.getElementById('contactBtn');
+if(contactBtnEl) contactBtnEl.addEventListener('click', ()=>{
+  document.getElementById('contactMessageSentNote').style.display = 'none';
+  document.getElementById('contactMessageText').value = '';
+  document.getElementById('contactMessageEmail').value = '';
+  document.getElementById('contactModalOverlay').style.display = 'flex';
+});
+document.getElementById('contactModalCancel').addEventListener('click', ()=>{
+  document.getElementById('contactModalOverlay').style.display = 'none';
+});
+document.getElementById('contactModalSend').addEventListener('click', async ()=>{
+  const message = document.getElementById('contactMessageText').value.trim();
+  const replyEmail = document.getElementById('contactMessageEmail').value.trim();
+  if(!message){ alert('Please add a message before sending.'); return; }
+  try{
+    const res = await fetch(sbUrl('contact_messages'), {
+      method:'POST',
+      headers:{...SB_HEADERS, 'Prefer':'return=representation'},
+      body: JSON.stringify([{ message, reply_email: replyEmail || null }])
+    });
+    if(!res.ok) throw new Error('insert failed: '+res.status);
+    const rows = await res.json();
+    contactMessages.unshift(rows[0]);
+    document.getElementById('contactMessageText').value = '';
+    document.getElementById('contactMessageEmail').value = '';
+    document.getElementById('contactMessageSentNote').style.display = 'block';
+  }catch(e){ console.error(e); alert('Could not send — check your connection and try again.'); }
+});
+
 // Profanity warning modal (replaces a plain confirm() so it can include a real link to the agreements)
 let profanityModalResolve = null;
 function showProfanityModal(){
@@ -2931,6 +3081,7 @@ document.getElementById('searchBtn').addEventListener('click', ()=>{
   await loadTopics();
   await loadBlockedEmails();
   await loadViolations();
+  await loadContactMessages();
   await loadPetitionSigners();
   currentTab = 'about';
   aboutSlideIndex = 0;
